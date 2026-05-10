@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: warhammer-postgres
+    environment:
+      POSTGRES_DB: warhammercompanion
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: ../docker/backend/Dockerfile
+    container_name: warhammer-api
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/warhammercompanion
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      SERVER_PORT: 8080
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+
+  web:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/frontend/Dockerfile
+    container_name: warhammer-web
+    depends_on:
+      - api
+    ports:
+      - "4200:80"
+
+volumes:
+  postgres_data:

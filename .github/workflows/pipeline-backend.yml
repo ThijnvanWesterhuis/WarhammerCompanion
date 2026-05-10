@@ -1,0 +1,114 @@
+name: WH Backend API Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - backend/**
+      - docker/backend/**
+      - 'docker-compose.yml'
+      - .github/workflows/*-backend.yml
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    name: Compile project
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Make mvnw executable
+        run: chmod +x backend/mvnw
+
+      - name: Compile project
+        run: |
+          cd backend
+          ./mvnw clean compile
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Unit tests
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: warhammercompanion_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d warhammercompanion_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Make mvnw executable
+        run: chmod +x backend/mvnw
+
+      - name: Running unit tests
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/warhammercompanion_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          SERVER_PORT: 8080
+        run: |
+          cd backend
+          ./mvnw clean test
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build backend
+    needs: [compile, unit-tests]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+
+      - name: Make mvnw executable
+        run: chmod +x backend/mvnw
+
+      - name: Build project
+        run: |
+          cd backend
+          ./mvnw clean package -DskipTests
+
+  build-image:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    needs: [build]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build backend Docker image
+        run: docker build -t warhammercompanion-api -f docker/backend/Dockerfile ./backend
