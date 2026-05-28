@@ -8,6 +8,17 @@ on:
       - backend/**
       - docker/backend/**
       - 'docker-compose.yml'
+      - 'docker-compose.staging.yml'
+      - '.env.staging'
+      - .github/workflows/*-backend.yml
+
+  pull_request:
+    paths:
+      - backend/**
+      - docker/backend/**
+      - 'docker-compose.yml'
+      - 'docker-compose.staging.yml'
+      - '.env.staging'
       - .github/workflows/*-backend.yml
 
 jobs:
@@ -110,5 +121,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build backend Docker image
-        run: docker build -t warhammercompanion-api -f docker/backend/Dockerfile ./backend
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push backend to Dockerhub
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: docker/backend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/warhammercompanion-api:latest

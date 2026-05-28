@@ -8,6 +8,17 @@ on:
       - frontend/**
       - docker/frontend/**
       - 'docker-compose.yml'
+      - 'docker-compose.staging.yml'
+      - '.env.staging'
+      - .github/workflows/*-frontend.yml
+
+  pull_request:
+    paths:
+      - frontend/**
+      - docker/frontend/**
+      - 'docker-compose.yml'
+      - 'docker-compose.staging.yml'
+      - '.env.staging'
       - .github/workflows/*-frontend.yml
 
 jobs:
@@ -16,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -69,5 +80,16 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Build frontend Docker image
-        run: docker build -t warhammercompanion-web -f docker/frontend/Dockerfile ./frontend
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push frontend to Dockerhub
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: docker/frontend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/warhammercompanion-web:latest
