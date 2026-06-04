@@ -1,4 +1,4 @@
-package backend.backend;
+package backend;
 
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
