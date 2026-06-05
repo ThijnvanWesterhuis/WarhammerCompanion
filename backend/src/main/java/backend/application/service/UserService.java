@@ -1,5 +1,6 @@
 package backend.application.service;
 
+import backend.api.exception.FieldValidationException;
 import backend.domain.Role;
 import backend.domain.User;
 import backend.api.dto.LoginResponseDto;
@@ -20,17 +21,24 @@ public class UserService {
     private final JwtService jwtService;
 
     public LoginResponseDto register(RegisterUserDto request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("Username is already in use");
+        String username = request.getUsername().trim();
+        String email = request.getEmail().trim();
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new FieldValidationException("confirmPassword", "Passwords do not match");
         }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email is already in use");
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
+            throw new FieldValidationException("username", "Username is already in use");
+        }
+
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw new FieldValidationException("email", "Email is already in use");
         }
 
         User user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
+                .username(username)
+                .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
                 .build();
