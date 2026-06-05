@@ -1,26 +1,22 @@
-import { Component, inject } from '@angular/core';
-import { HealthService } from './health.service';
+import { Component } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { AccountService } from './auth/services/account.service';
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  standalone: true,
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
-  private healthService = inject(HealthService);
+  constructor(
+    public accountService: AccountService,
+    private router: Router
+  ) {}
 
-  title = 'frontend';
-  backendStatus = 'Not tested yet';
-
-  testBackend() {
-    this.healthService.getHealth().subscribe({
-      next: (response) => {
-        this.backendStatus = response.status;
-      },
-      error: () => {
-        this.backendStatus = 'Connection failed';
-      }
-    });
+  logout() {
+    this.accountService.logout();
+    this.router.navigate(['/home']);
   }
 }
