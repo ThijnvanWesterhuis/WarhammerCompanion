@@ -1,0 +1,78 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background: rgba(19, 19, 20, 0.94);
+  border-bottom: 1px solid var(--steel);
+  backdrop-filter: blur(8px);
+}
+
+.brand {
+  display: grid;
+  gap: 0.15rem;
+  color: var(--brass);
+  font-family: 'Space Grotesk', Inter, sans-serif;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.brand small {
+  color: var(--outline);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+nav a,
+.link-button {
+  min-height: auto;
+  padding: 0.55rem 0.75rem;
+  background: transparent;
+  border: 1px solid transparent;
+  clip-path: none;
+  color: var(--outline);
+  font-family: 'Space Grotesk', Inter, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+nav a.active,
+nav a:hover,
+.link-button:hover {
+  background: var(--surface);
+  border-color: var(--steel);
+  color: var(--brass);
+  text-decoration: none;
+  transform: none;
+}
+
+main {
+  width: min(72rem, calc(100% - 2rem));
+  margin: 2rem auto 4rem;
+}
+
+@media (max-width: 720px) {
+  .site-header {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 1rem;
+  }
+}

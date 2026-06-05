@@ -1,5 +1,27 @@
-<h1>Warhammer Companion</h1>
+<header class="site-header">
+  <a routerLink="/home" class="brand">
+    War Slate
+    <small>Battle Ready Command Console</small>
+  </a>
 
-<button (click)="testBackend()">Test backend</button>
+  <nav aria-label="Main navigation">
+    <a routerLink="/home" routerLinkActive="active">Command</a>
 
-<p>Backend status: {{ backendStatus }}</p>
+    @if (accountService.isLoggedIn()) {
+      <a routerLink="/profile" routerLinkActive="active">Profile</a>
+
+      @if (accountService.isAdmin()) {
+        <a routerLink="/admin" routerLinkActive="active">Admin</a>
+      }
+
+      <button type="button" class="link-button" (click)="logout()">Logout</button>
+    } @else {
+      <a routerLink="/login" routerLinkActive="active">Authenticate</a>
+      <a routerLink="/register" routerLinkActive="active">Register</a>
+    }
+  </nav>
+</header>
+
+<main>
+  <router-outlet />
+</main>

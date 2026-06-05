@@ -1,5 +1,7 @@
 package backend.api.controller;
 
+import backend.api.exception.FieldValidationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,9 +14,19 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(FieldValidationException.class)
+    public ResponseEntity<Map<String, String>> handleFieldValidation(FieldValidationException exception) {
+        return ResponseEntity.badRequest().body(exception.getErrors());
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgument(IllegalArgumentException exception) {
         return ResponseEntity.badRequest().body(Map.of("error", exception.getMessage()));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation() {
+        return ResponseEntity.badRequest().body(Map.of("error", "Username or email is already in use"));
     }
 
     @ExceptionHandler(BadCredentialsException.class)

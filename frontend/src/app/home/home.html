@@ -1,0 +1,15 @@
+<div class="page">
+  <div class="card">
+    <h2>Warhammer Companion</h2>
+    <p>Simple account system with JWT login, registration, user profiles and admin access.</p>
+
+    <div class="actions">
+      @if (!accountService.isLoggedIn()) {
+        <a routerLink="/register" class="button">Register</a>
+        <a routerLink="/login" class="button secondary">Login</a>
+      } @else {
+        <a routerLink="/profile" class="button">Go to profile</a>
+      }
+    </div>
+  </div>
+</div>
