@@ -1,0 +1,151 @@
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+select {
+  width: 100%;
+  border: 1px solid var(--steel);
+  border-radius: 0;
+  padding: 0.75rem 0.85rem;
+  background: var(--surface);
+  color: var(--on-surface);
+  outline: none;
+  font: inherit;
+}
+
+select:focus {
+  border-color: var(--brass);
+  box-shadow: 0 0 0 1px rgba(247, 189, 72, 0.35);
+}
+
+.dice-form,
+.result-panel,
+.preset-list,
+.history-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.preset-feed {
+  margin: 0;
+  border: 1px solid var(--steel);
+  background: var(--surface);
+  padding: 0.75rem 1rem;
+}
+
+.result-panel {
+  margin-top: 1.5rem;
+  border: 1px solid var(--steel);
+  background: var(--surface);
+  padding: 1rem;
+}
+
+.panel-heading.compact {
+  margin-bottom: 0;
+}
+
+.dice-results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.die-result {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--brass-dark);
+  background: var(--surface-high);
+  color: var(--brass);
+  font-family: 'Space Grotesk', Inter, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+.preset-actions {
+  margin-bottom: 1rem;
+}
+
+.preset-card,
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--steel);
+  background: var(--surface);
+  padding: 0.9rem 1rem;
+}
+
+.preset-card.selected {
+  border-color: var(--brass);
+  box-shadow: 0 0 8px rgba(184, 134, 11, 0.35);
+}
+
+.preset-card div:first-child,
+.history-row div:first-child {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.preset-card strong,
+.history-row strong {
+  color: var(--on-surface);
+  font-family: 'Space Grotesk', Inter, sans-serif;
+  text-transform: uppercase;
+}
+
+.preset-card span,
+.history-row span {
+  color: var(--on-surface-muted);
+  font-size: 0.9rem;
+}
+
+.preset-card small {
+  width: fit-content;
+  border: 1px solid var(--outline-variant);
+  padding: 0.2rem 0.4rem;
+  color: var(--outline);
+  text-transform: uppercase;
+}
+
+.preset-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+button.small {
+  min-height: 2.1rem;
+  padding: 0.4rem 0.55rem;
+  font-size: 0.68rem;
+}
+
+.history-results {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 760px) {
+  .form-grid,
+  .preset-card,
+  .history-row {
+    grid-template-columns: 1fr;
+  }
+
+  .preset-card,
+  .history-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+.preset-feed.warning {
+  border-color: var(--brass);
+  color: var(--brass);
+}

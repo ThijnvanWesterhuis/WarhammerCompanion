@@ -35,6 +35,13 @@ export const routes: Routes = [
   },
 
   {
+    path: 'dice',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./dice/pages/dice/dice').then(m => m.Dice)
+  },
+
+  {
     path: 'admin',
     canActivate: [authGuard, adminGuard],
     loadComponent: () =>

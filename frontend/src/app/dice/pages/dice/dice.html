@@ -1,0 +1,178 @@
+<div class="page">
+  <section class="command-grid">
+    <div class="command-column-main tactical-card active">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">Dice Cogitator</span>
+          <h2>Dice Roller</h2>
+        </div>
+        <span class="status-tag">D6 / D10 / D20</span>
+      </div>
+
+      @if (errorMessage()) {
+        <p class="error-box">{{ errorMessage() }}</p>
+      }
+
+      @if (successMessage()) {
+        <p class="success-box">{{ successMessage() }}</p>
+      }
+
+      <form class="dice-form" (ngSubmit)="rollDice()" novalidate>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="diceType">Dice Type</label>
+            <select id="diceType" name="diceType" [(ngModel)]="diceType">
+              @for (type of diceTypes; track type) {
+                <option [value]="type">{{ type }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="diceCount">Amount</label>
+            <input
+              id="diceCount"
+              name="diceCount"
+              type="number"
+              min="1"
+              max="100"
+              [class.input-error]="!!diceCountWarning"
+              [(ngModel)]="diceCount"
+            />
+
+            @if (diceCountWarning) {
+              <span class="field-error">{{ diceCountWarning }}</span>
+            }
+          </div>
+        </div>
+
+        @if (selectedPreset; as preset) {
+          @if (selectedPresetStillMatchesSettings) {
+            <p class="preset-feed">
+              Loaded preset: <strong>{{ preset.name }}</strong>
+              @if (preset.phase) {
+                <span> / {{ preset.phase }}</span>
+              }
+            </p>
+          } @else {
+            <p class="preset-feed warning">
+              Modified from preset: <strong>{{ preset.name }}</strong>
+            </p>
+          }
+        }
+
+        <div class="form-actions">
+          <button type="submit">Roll Dice</button>
+          <button type="button" class="secondary" (click)="clearPresetSelection()">Clear Preset</button>
+        </div>
+      </form>
+
+      @if (lastRoll(); as roll) {
+        <section class="result-panel">
+          <div class="panel-heading compact">
+            <div>
+              <span class="eyebrow">Last Roll</span>
+              <h3>{{ roll.diceCount }} {{ roll.diceType }}</h3>
+            </div>
+            <span class="status-tag">Total {{ roll.total }}</span>
+          </div>
+
+          <div class="dice-results">
+            @for (result of roll.results; track $index) {
+              <span class="die-result">{{ result }}</span>
+            }
+          </div>
+        </section>
+      }
+    </div>
+
+    <aside class="command-column-side tactical-card">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">Saved Loadouts</span>
+          <h3>Presets</h3>
+        </div>
+        <span class="status-tag">{{ presets().length }}</span>
+      </div>
+
+      <div class="form-group">
+        <label for="presetName">Preset Name</label>
+        <input
+          id="presetName"
+          name="presetName"
+          type="text"
+          placeholder="Example: Bolter shots"
+          [class.input-error]="!!presetName && !!presetNameWarning"
+          [(ngModel)]="presetName"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="presetPhase">Phase Optional</label>
+        <input
+          id="presetPhase"
+          name="presetPhase"
+          type="text"
+          placeholder="Shooting / Fight / Morale"
+          [(ngModel)]="presetPhase"
+        />
+      </div>
+
+      <div class="form-actions preset-actions">
+        <button type="button" (click)="savePreset()">Save Preset</button>
+        <button type="button" class="secondary" (click)="updateSelectedPreset()">Update</button>
+      </div>
+
+      <div class="preset-list">
+        @for (preset of presets(); track preset.id) {
+          <article class="preset-card" [class.selected]="preset.id === selectedPresetId">
+            <div>
+              <strong>{{ preset.name }}</strong>
+              <span>{{ preset.diceCount }} {{ preset.diceType }}</span>
+
+              @if (preset.phase) {
+                <small>{{ preset.phase }}</small>
+              }
+            </div>
+
+            <div class="preset-card-actions">
+              <button type="button" class="secondary small" (click)="usePreset(preset)">Use</button>
+              <button type="button" class="secondary small" (click)="deletePreset(preset)">Delete</button>
+            </div>
+          </article>
+        } @empty {
+          <p>No presets saved yet.</p>
+        }
+      </div>
+    </aside>
+  </section>
+
+  <section class="tactical-card">
+    <div class="panel-heading">
+      <div>
+        <span class="eyebrow">Recent Activity</span>
+        <h3>Roll History</h3>
+      </div>
+      <span class="status-tag">Last 20</span>
+    </div>
+
+    <div class="history-list">
+      @for (roll of rollHistory(); track roll.id) {
+        <article class="history-row">
+          <div>
+            <strong>{{ roll.diceCount }} {{ roll.diceType }}</strong>
+
+            @if (roll.sourcePresetName) {
+              <span>Preset: {{ roll.sourcePresetName }}</span>
+            }
+          </div>
+
+          <span class="history-results">{{ roll.results.join(', ') }}</span>
+          <span class="status-tag">Total {{ roll.total }}</span>
+        </article>
+      } @empty {
+        <p>No rolls yet.</p>
+      }
+    </div>
+  </section>
+</div>

@@ -9,6 +9,7 @@
 
     @if (accountService.isLoggedIn()) {
       <a routerLink="/profile" routerLinkActive="active">Profile</a>
+      <a routerLink="/dice" routerLinkActive="active">Dice Roller</a>
 
       @if (accountService.isAdmin()) {
         <a routerLink="/admin" routerLinkActive="active">Admin</a>
