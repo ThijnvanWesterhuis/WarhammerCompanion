@@ -24,6 +24,6 @@ describe('App', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
 
-    expect(compiled.textContent).toContain('Warhammer');
+    expect(compiled.textContent).toContain('War Slate');
   });
 });
