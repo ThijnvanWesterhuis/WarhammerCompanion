@@ -3,6 +3,7 @@ import { ApiService } from '../../core/services/api.service';
 import {
   DicePreset,
   DicePresetRequest,
+  DiceRerollValueRequest,
   DiceRoll,
   DiceRollRequest
 } from '../models/dice.models';
@@ -29,6 +30,14 @@ export class DiceService {
 
   roll(request: DiceRollRequest) {
     return this.api.post<DiceRoll>('/dice/roll', request);
+  }
+
+  rerollLast() {
+    return this.api.post<DiceRoll>('/dice/reroll-last', {});
+  }
+
+  rerollValue(request: DiceRerollValueRequest) {
+    return this.api.post<DiceRoll>('/dice/reroll-value', request);
   }
 
   getRollHistory() {

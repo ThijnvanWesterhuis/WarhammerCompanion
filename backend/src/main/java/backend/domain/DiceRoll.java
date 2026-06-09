@@ -20,7 +20,6 @@ public class DiceRoll {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Roll history belongs to the logged-in user
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -32,6 +31,9 @@ public class DiceRoll {
     @Column(nullable = false)
     private Integer diceCount;
 
+    @Column
+    private Integer successThreshold;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "dice_roll_result", joinColumns = @JoinColumn(name = "dice_roll_id"))
     @OrderColumn(name = "result_index")
@@ -41,6 +43,12 @@ public class DiceRoll {
 
     @Column(length = 80)
     private String sourcePresetName;
+
+    @Column
+    private Long rerollSourceRollId;
+
+    @Column(length = 30)
+    private String rerollType;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;

@@ -14,6 +14,7 @@ public class DicePresetResponseDto {
     private String name;
     private DiceType diceType;
     private Integer diceCount;
+    private Integer successThreshold;
     private String phase;
     private LocalDateTime createdAt;
 
@@ -23,6 +24,7 @@ public class DicePresetResponseDto {
                 preset.getName(),
                 preset.getDiceType(),
                 preset.getDiceCount(),
+                preset.getSuccessThreshold(),
                 preset.getPhase(),
                 preset.getCreatedAt()
         );

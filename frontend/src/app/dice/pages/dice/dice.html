@@ -44,6 +44,25 @@
               <span class="field-error">{{ diceCountWarning }}</span>
             }
           </div>
+
+          <div class="form-group">
+            <label for="successThreshold">Success Threshold</label>
+            <select
+              id="successThreshold"
+              name="successThreshold"
+              [class.input-error]="!!successThresholdWarning"
+              [(ngModel)]="successThreshold"
+            >
+              <option [ngValue]="null">No threshold</option>
+              @for (threshold of thresholdOptions; track threshold) {
+                <option [ngValue]="threshold">{{ threshold }}+</option>
+              }
+            </select>
+
+            @if (successThresholdWarning) {
+              <span class="field-error">{{ successThresholdWarning }}</span>
+            }
+          </div>
         </div>
 
         @if (selectedPreset; as preset) {
@@ -52,6 +71,9 @@
               Loaded preset: <strong>{{ preset.name }}</strong>
               @if (preset.phase) {
                 <span> / {{ preset.phase }}</span>
+              }
+              @if (preset.successThreshold) {
+                <span> / {{ preset.successThreshold }}+</span>
               }
             </p>
           } @else {
@@ -63,6 +85,8 @@
 
         <div class="form-actions">
           <button type="submit">Roll Dice</button>
+          <button type="button" class="secondary" (click)="rerollLastRoll()">Reroll Last</button>
+          <button type="button" class="secondary" [disabled]="!canRerollOnes" (click)="rerollAllOnes()">Reroll All 1s</button>
           <button type="button" class="secondary" (click)="clearPresetSelection()">Clear Preset</button>
         </div>
       </form>
@@ -77,9 +101,27 @@
             <span class="status-tag">Total {{ roll.total }}</span>
           </div>
 
+          @if (roll.successThreshold) {
+            <div class="success-summary">
+              <span>Threshold {{ roll.successThreshold }}+</span>
+              <span>Successes: <strong>{{ roll.successCount }}</strong></span>
+              <span>Fails: <strong>{{ roll.failCount }}</strong></span>
+            </div>
+          }
+
+          @if (roll.rerollType) {
+            <p class="preset-feed reroll-feed">
+              Reroll type: <strong>{{ roll.rerollType }}</strong>
+            </p>
+          }
+
           <div class="dice-results">
             @for (result of roll.results; track $index) {
-              <span class="die-result">{{ result }}</span>
+              <span
+                class="die-result"
+                [class.success]="isSuccess(result, roll)"
+                [class.fail]="isFail(result, roll)"
+              >{{ result }}</span>
             }
           </div>
         </section>
@@ -130,6 +172,10 @@
               <strong>{{ preset.name }}</strong>
               <span>{{ preset.diceCount }} {{ preset.diceType }}</span>
 
+              @if (preset.successThreshold) {
+                <small>Success {{ preset.successThreshold }}+</small>
+              }
+
               @if (preset.phase) {
                 <small>{{ preset.phase }}</small>
               }
@@ -165,10 +211,19 @@
             @if (roll.sourcePresetName) {
               <span>Preset: {{ roll.sourcePresetName }}</span>
             }
+
+            @if (roll.rerollType) {
+              <span>Reroll: {{ roll.rerollType }}</span>
+            }
           </div>
 
           <span class="history-results">{{ roll.results.join(', ') }}</span>
-          <span class="status-tag">Total {{ roll.total }}</span>
+
+          @if (roll.successThreshold) {
+            <span class="status-tag">{{ roll.successCount }} success / {{ roll.failCount }} fail</span>
+          } @else {
+            <span class="status-tag">Total {{ roll.total }}</span>
+          }
         </article>
       } @empty {
         <p>No rolls yet.</p>
