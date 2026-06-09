@@ -10,3 +10,11 @@ backend/target/
 .env.staging
 .DS_Store
 Thumbs.db
+
+# SonarQube scanner output
+.scannerwork/
+.sonar/
+
+# Coverage output
+frontend/coverage/
+backend/target/site/jacoco/
