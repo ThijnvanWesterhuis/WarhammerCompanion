@@ -16,7 +16,12 @@ public class DiceRollResponseDto {
     private Integer diceCount;
     private List<Integer> results;
     private Integer total;
+    private Integer successThreshold;
+    private Integer successCount;
+    private Integer failCount;
     private String sourcePresetName;
+    private Long rerollSourceRollId;
+    private String rerollType;
     private LocalDateTime createdAt;
 
     public static DiceRollResponseDto fromRoll(DiceRoll roll) {
@@ -24,13 +29,29 @@ public class DiceRollResponseDto {
                 .mapToInt(Integer::intValue)
                 .sum();
 
+        Integer successCount = null;
+        Integer failCount = null;
+
+        if (roll.getSuccessThreshold() != null) {
+            successCount = (int) roll.getResults().stream()
+                    .filter(result -> result >= roll.getSuccessThreshold())
+                    .count();
+
+            failCount = roll.getResults().size() - successCount;
+        }
+
         return new DiceRollResponseDto(
                 roll.getId(),
                 roll.getDiceType(),
                 roll.getDiceCount(),
                 roll.getResults(),
                 total,
+                roll.getSuccessThreshold(),
+                successCount,
+                failCount,
                 roll.getSourcePresetName(),
+                roll.getRerollSourceRollId(),
+                roll.getRerollType(),
                 roll.getCreatedAt()
         );
     }

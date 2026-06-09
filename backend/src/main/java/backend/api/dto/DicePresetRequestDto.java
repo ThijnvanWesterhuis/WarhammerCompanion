@@ -21,6 +21,10 @@ public class DicePresetRequestDto {
     @Max(value = 100, message = "Dice count may not be higher than 100")
     private Integer diceCount;
 
+    @Min(value = 1, message = "Success threshold must be at least 1")
+    @Max(value = 20, message = "Success threshold may not be higher than 20")
+    private Integer successThreshold;
+
     @Size(max = 50, message = "Phase may not be longer than 50 characters")
     private String phase;
 }

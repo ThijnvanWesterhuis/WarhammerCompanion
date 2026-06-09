@@ -17,6 +17,9 @@ public class DiceRollRequestDto {
     @Max(value = 100, message = "Dice count may not be higher than 100")
     private Integer diceCount;
 
-    // Optional: used to remember which preset caused the roll
+    @Min(value = 1, message = "Success threshold must be at least 1")
+    @Max(value = 20, message = "Success threshold may not be higher than 20")
+    private Integer successThreshold;
+
     private Long presetId;
 }

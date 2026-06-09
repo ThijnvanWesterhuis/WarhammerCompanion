@@ -23,7 +23,6 @@ public class DicePreset {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Presets belong to the logged-in user
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -38,7 +37,9 @@ public class DicePreset {
     @Column(nullable = false)
     private Integer diceCount;
 
-    // Optional, useful later for Shooting/Fight/Charge phase filtering
+    @Column
+    private Integer successThreshold;
+
     @Column(length = 50)
     private String phase;
 

@@ -16,6 +16,7 @@ export class Dice implements OnInit {
 
   diceType: DiceType = 'D6';
   diceCount = 5;
+  successThreshold: number | null = 4;
   presetName = '';
   presetPhase = '';
   selectedPresetId: number | null = null;
@@ -45,7 +46,20 @@ export class Dice implements OnInit {
     }
 
     return preset.diceType === this.diceType
-      && preset.diceCount === this.diceCount;
+      && preset.diceCount === this.diceCount
+      && (preset.successThreshold ?? null) === this.successThreshold;
+  }
+
+  get diceSides() {
+    return Number(this.diceType.replace('D', ''));
+  }
+
+  get thresholdOptions() {
+    return Array.from({ length: this.diceSides }, (_, index) => index + 1);
+  }
+
+  get canRerollOnes() {
+    return this.lastRoll()?.results.includes(1) ?? false;
   }
 
   get diceCountWarning() {
@@ -59,6 +73,18 @@ export class Dice implements OnInit {
 
     if (this.diceCount > 100) {
       return 'You can roll a maximum of 100 dice at once';
+    }
+
+    return '';
+  }
+
+  get successThresholdWarning() {
+    if (this.successThreshold === null || this.successThreshold === undefined) {
+      return '';
+    }
+
+    if (this.successThreshold < 1 || this.successThreshold > this.diceSides) {
+      return `Success threshold must be between 1 and ${this.diceSides} for ${this.diceType}`;
     }
 
     return '';
@@ -84,17 +110,47 @@ export class Dice implements OnInit {
       return;
     }
 
+    if (this.successThresholdWarning) {
+      this.errorMessage.set(this.successThresholdWarning);
+      return;
+    }
+
     this.diceService.roll({
       diceType: this.diceType,
       diceCount: this.diceCount,
+      successThreshold: this.successThreshold,
       presetId: this.selectedPresetStillMatchesSettings ? this.selectedPresetId : null
     }).subscribe({
-      next: roll => {
-        this.lastRoll.set(roll);
-        this.rollHistory.update(history => [roll, ...history].slice(0, 20));
-        this.successMessage.set(`Rolled ${roll.diceCount} ${roll.diceType} dice.`);
-      },
+      next: roll => this.applyRoll(roll, `Rolled ${roll.diceCount} ${roll.diceType} dice.`),
       error: error => this.handleError(error, 'Could not roll dice')
+    });
+  }
+
+  rerollLastRoll() {
+    this.clearMessages();
+
+    this.diceService.rerollLast().subscribe({
+      next: roll => this.applyRoll(roll, 'Rerolled the last roll with the same settings.'),
+      error: error => this.handleError(error, 'Could not reroll the last roll')
+    });
+  }
+
+  rerollAllOnes() {
+    this.clearMessages();
+
+    const roll = this.lastRoll();
+
+    if (!roll) {
+      this.errorMessage.set('Roll dice before trying to reroll specific dice.');
+      return;
+    }
+
+    this.diceService.rerollValue({
+      rollId: roll.id,
+      rerollValue: 1
+    }).subscribe({
+      next: reroll => this.applyRoll(reroll, 'Rerolled all dice that showed a 1.'),
+      error: error => this.handleError(error, 'Could not reroll dice with value 1')
     });
   }
 
@@ -111,10 +167,16 @@ export class Dice implements OnInit {
       return;
     }
 
+    if (this.successThresholdWarning) {
+      this.errorMessage.set(this.successThresholdWarning);
+      return;
+    }
+
     this.diceService.createPreset({
       name: this.presetName.trim(),
       diceType: this.diceType,
       diceCount: this.diceCount,
+      successThreshold: this.successThreshold,
       phase: this.presetPhase.trim() || null
     }).subscribe({
       next: preset => {
@@ -144,10 +206,16 @@ export class Dice implements OnInit {
       return;
     }
 
+    if (this.successThresholdWarning) {
+      this.errorMessage.set(this.successThresholdWarning);
+      return;
+    }
+
     this.diceService.updatePreset(this.selectedPresetId, {
       name: this.presetName.trim(),
       diceType: this.diceType,
       diceCount: this.diceCount,
+      successThreshold: this.successThreshold,
       phase: this.presetPhase.trim() || null
     }).subscribe({
       next: updatedPreset => {
@@ -183,6 +251,7 @@ export class Dice implements OnInit {
     this.presetName = preset.name;
     this.diceType = preset.diceType;
     this.diceCount = preset.diceCount;
+    this.successThreshold = preset.successThreshold ?? null;
     this.presetPhase = preset.phase ?? '';
     this.clearMessages();
   }
@@ -191,6 +260,27 @@ export class Dice implements OnInit {
     this.selectedPresetId = null;
     this.presetName = '';
     this.presetPhase = '';
+  }
+
+  isSuccess(result: number, roll: DiceRoll) {
+    return roll.successThreshold !== null
+      && roll.successThreshold !== undefined
+      && result >= roll.successThreshold;
+  }
+
+  isFail(result: number, roll: DiceRoll) {
+    return roll.successThreshold !== null
+      && roll.successThreshold !== undefined
+      && result < roll.successThreshold;
+  }
+
+  private applyRoll(roll: DiceRoll, message: string) {
+    this.lastRoll.set(roll);
+    this.diceType = roll.diceType;
+    this.diceCount = roll.diceCount;
+    this.successThreshold = roll.successThreshold ?? null;
+    this.rollHistory.update(history => [roll, ...history].slice(0, 20));
+    this.successMessage.set(message);
   }
 
   private loadPresets() {
@@ -202,7 +292,10 @@ export class Dice implements OnInit {
 
   private loadRollHistory() {
     this.diceService.getRollHistory().subscribe({
-      next: history => this.rollHistory.set(history),
+      next: history => {
+        this.rollHistory.set(history);
+        this.lastRoll.set(history[0] ?? null);
+      },
       error: error => this.handleError(error, 'Could not load roll history')
     });
   }
@@ -219,6 +312,8 @@ export class Dice implements OnInit {
       this.errorMessage.set(response['name']
         ?? response['diceCount']
         ?? response['diceType']
+        ?? response['successThreshold']
+        ?? response['rerollValue']
         ?? response['error']
         ?? fallbackMessage
       );
