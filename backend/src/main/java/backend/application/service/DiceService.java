@@ -1,13 +1,14 @@
 package backend.application.service;
 
 import backend.api.dto.*;
+import backend.api.event.DiceRolledEvent;
 import backend.api.exception.FieldValidationException;
 import backend.data.repository.DicePresetRepository;
 import backend.data.repository.DiceRollRepository;
-import backend.domain.DicePreset;
-import backend.domain.DiceRoll;
-import backend.domain.User;
+import backend.data.repository.GameSessionRepository;
+import backend.domain.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,6 +21,8 @@ public class DiceService {
 
     private final DicePresetRepository dicePresetRepository;
     private final DiceRollRepository diceRollRepository;
+    private final GameSessionRepository gameSessionRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<DicePresetResponseDto> getPresets(User user) {
         return dicePresetRepository.findByUserOrderByNameAsc(user)
@@ -47,6 +50,7 @@ public class DiceService {
 
     public DicePresetResponseDto updatePreset(User user, Long presetId, DicePresetRequestDto request) {
         DicePreset preset = findPresetForUser(user, presetId);
+
         validatePresetNameIsAvailable(user, request.getName(), preset.getId());
         validateSuccessThreshold(request.getDiceType(), request.getSuccessThreshold());
 
@@ -75,10 +79,16 @@ public class DiceService {
             sourcePresetName = preset.getName();
         }
 
-        List<Integer> results = rollNewResults(request.getDiceType().getSides(), request.getDiceCount());
+        GameSession session = findActiveSessionForUserOrNull(user, request.getSessionId());
+
+        List<Integer> results = rollNewResults(
+                request.getDiceType().getSides(),
+                request.getDiceCount()
+        );
 
         DiceRoll roll = DiceRoll.builder()
                 .user(user)
+                .gameSession(session)
                 .diceType(request.getDiceType())
                 .diceCount(request.getDiceCount())
                 .successThreshold(request.getSuccessThreshold())
@@ -87,17 +97,30 @@ public class DiceService {
                 .build();
 
         DiceRoll savedRoll = diceRollRepository.save(roll);
-        return DiceRollResponseDto.fromRoll(savedRoll);
+        DiceRollResponseDto response = DiceRollResponseDto.fromRoll(savedRoll);
+
+        publishDiceRollEventIfNeeded(savedRoll, response);
+
+        return response;
     }
 
-    public DiceRollResponseDto rerollLastRoll(User user) {
-        DiceRoll previousRoll = diceRollRepository.findFirstByUserOrderByCreatedAtDesc(user)
-                .orElseThrow(() -> new IllegalArgumentException("There is no previous roll to reroll"));
+    public DiceRollResponseDto rerollLastRoll(User user, Long sessionId) {
+        GameSession session = findActiveSessionForUserOrNull(user, sessionId);
 
-        List<Integer> results = rollNewResults(previousRoll.getDiceType().getSides(), previousRoll.getDiceCount());
+        DiceRoll previousRoll = session == null
+                ? diceRollRepository.findFirstByUserOrderByCreatedAtDesc(user)
+                .orElseThrow(() -> new IllegalArgumentException("There is no previous roll to reroll"))
+                : diceRollRepository.findFirstByUserAndGameSessionOrderByCreatedAtDesc(user, session)
+                .orElseThrow(() -> new IllegalArgumentException("There is no previous roll in this session to reroll"));
+
+        List<Integer> results = rollNewResults(
+                previousRoll.getDiceType().getSides(),
+                previousRoll.getDiceCount()
+        );
 
         DiceRoll reroll = DiceRoll.builder()
                 .user(user)
+                .gameSession(previousRoll.getGameSession())
                 .diceType(previousRoll.getDiceType())
                 .diceCount(previousRoll.getDiceCount())
                 .successThreshold(previousRoll.getSuccessThreshold())
@@ -108,12 +131,21 @@ public class DiceService {
                 .build();
 
         DiceRoll savedRoll = diceRollRepository.save(reroll);
-        return DiceRollResponseDto.fromRoll(savedRoll);
+        DiceRollResponseDto response = DiceRollResponseDto.fromRoll(savedRoll);
+
+        publishDiceRollEventIfNeeded(savedRoll, response);
+
+        return response;
     }
 
     public DiceRollResponseDto rerollDiceWithValue(User user, DiceRerollValueRequestDto request) {
         DiceRoll previousRoll = diceRollRepository.findByIdAndUser(request.getRollId(), user)
                 .orElseThrow(() -> new IllegalArgumentException("Roll was not found"));
+
+        if (previousRoll.getGameSession() != null
+                && previousRoll.getGameSession().getStatus() != GameSessionStatus.ACTIVE) {
+            throw new IllegalArgumentException("This session is already finished");
+        }
 
         int sides = previousRoll.getDiceType().getSides();
 
@@ -143,6 +175,7 @@ public class DiceService {
 
         DiceRoll reroll = DiceRoll.builder()
                 .user(user)
+                .gameSession(previousRoll.getGameSession())
                 .diceType(previousRoll.getDiceType())
                 .diceCount(previousRoll.getDiceCount())
                 .successThreshold(previousRoll.getSuccessThreshold())
@@ -153,7 +186,11 @@ public class DiceService {
                 .build();
 
         DiceRoll savedRoll = diceRollRepository.save(reroll);
-        return DiceRollResponseDto.fromRoll(savedRoll);
+        DiceRollResponseDto response = DiceRollResponseDto.fromRoll(savedRoll);
+
+        publishDiceRollEventIfNeeded(savedRoll, response);
+
+        return response;
     }
 
     public List<DiceRollResponseDto> getRollHistory(User user) {
@@ -161,6 +198,43 @@ public class DiceService {
                 .stream()
                 .map(DiceRollResponseDto::fromRoll)
                 .toList();
+    }
+
+    public List<DiceRollResponseDto> getSessionRollHistory(User user, Long sessionId) {
+        GameSession session = findSessionForUser(user, sessionId);
+
+        return diceRollRepository.findTop20ByUserAndGameSessionOrderByCreatedAtDesc(user, session)
+                .stream()
+                .map(DiceRollResponseDto::fromRoll)
+                .toList();
+    }
+
+    private void publishDiceRollEventIfNeeded(DiceRoll roll, DiceRollResponseDto response) {
+        if (roll.getGameSession() != null) {
+            eventPublisher.publishEvent(new DiceRolledEvent(
+                    roll.getGameSession().getId(),
+                    response
+            ));
+        }
+    }
+
+    private GameSession findActiveSessionForUserOrNull(User user, Long sessionId) {
+        if (sessionId == null) {
+            return null;
+        }
+
+        GameSession session = findSessionForUser(user, sessionId);
+
+        if (session.getStatus() != GameSessionStatus.ACTIVE) {
+            throw new IllegalArgumentException("This session is already finished");
+        }
+
+        return session;
+    }
+
+    private GameSession findSessionForUser(User user, Long sessionId) {
+        return gameSessionRepository.findByIdAndUser(sessionId, user)
+                .orElseThrow(() -> new IllegalArgumentException("Session was not found"));
     }
 
     private List<Integer> rollNewResults(int sides, int diceCount) {
@@ -177,7 +251,7 @@ public class DiceService {
         return ThreadLocalRandom.current().nextInt(1, sides + 1);
     }
 
-    private void validateSuccessThreshold(backend.domain.DiceType diceType, Integer successThreshold) {
+    private void validateSuccessThreshold(DiceType diceType, Integer successThreshold) {
         if (successThreshold == null) {
             return;
         }

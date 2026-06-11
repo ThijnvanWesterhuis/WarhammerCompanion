@@ -1,0 +1,103 @@
+<div class="page match-edit-page">
+  <section class="page-hero compact">
+    <div>
+      <h1>Edit Match</h1>
+      <span class="mono-label">Archived engagement // update saved battle data</span>
+    </div>
+
+    <div class="edit-actions">
+      <a routerLink="/matches" class="button secondary">Back to History</a>
+
+      @if (match(); as currentMatch) {
+        <a [routerLink]="['/matches', currentMatch.id]" class="button secondary">Cancel</a>
+      }
+    </div>
+  </section>
+
+  @if (errorMessage()) {
+    <p class="error-box">{{ errorMessage() }}</p>
+  }
+
+  @if (loading()) {
+    <section class="tactical-card">
+      <p>Loading match...</p>
+    </section>
+  } @else if (match()) {
+    <section class="tactical-card active edit-card">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">Edit Record</span>
+          <h2>Match Information</h2>
+        </div>
+        <span class="status-tag">Saved Match</span>
+      </div>
+
+      <form class="edit-form" (ngSubmit)="saveMatch()" novalidate>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="playerOneName">Player One</label>
+            <input id="playerOneName" name="playerOneName" [(ngModel)]="playerOneName" />
+          </div>
+
+          <div class="form-group">
+            <label for="playerTwoName">Player Two</label>
+            <input id="playerTwoName" name="playerTwoName" [(ngModel)]="playerTwoName" />
+          </div>
+
+          <div class="form-group">
+            <label for="playerOneFaction">Player One Faction</label>
+            <input id="playerOneFaction" name="playerOneFaction" [(ngModel)]="playerOneFaction" />
+          </div>
+
+          <div class="form-group">
+            <label for="playerTwoFaction">Player Two Faction</label>
+            <input id="playerTwoFaction" name="playerTwoFaction" [(ngModel)]="playerTwoFaction" />
+          </div>
+
+          <div class="form-group">
+            <label for="missionName">Mission</label>
+            <input id="missionName" name="missionName" [(ngModel)]="missionName" />
+          </div>
+
+          <div class="form-group">
+            <label for="deploymentMap">Deployment Map</label>
+            <input id="deploymentMap" name="deploymentMap" [(ngModel)]="deploymentMap" />
+          </div>
+
+          <div class="form-group">
+            <label for="playerOneScore">Player One Score</label>
+            <input
+              id="playerOneScore"
+              name="playerOneScore"
+              type="number"
+              min="0"
+              [(ngModel)]="playerOneScore"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="playerTwoScore">Player Two Score</label>
+            <input
+              id="playerTwoScore"
+              name="playerTwoScore"
+              type="number"
+              min="0"
+              [(ngModel)]="playerTwoScore"
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="5" [(ngModel)]="notes"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions edit-submit-actions">
+          <button type="submit" [disabled]="saving()">
+            {{ saving() ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  }
+</div>

@@ -23,6 +23,7 @@ export interface DiceRollRequest {
   diceCount: number;
   successThreshold?: number | null;
   presetId?: number | null;
+  sessionId?: number | null;
 }
 
 export interface DiceRerollValueRequest {
@@ -32,6 +33,7 @@ export interface DiceRerollValueRequest {
 
 export interface DiceRoll {
   id: number;
+  gameSessionId?: number | null;
   diceType: DiceType;
   diceCount: number;
   results: number[];

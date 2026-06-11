@@ -1,28 +1,95 @@
-<header class="site-header">
-  <a routerLink="/home" class="brand">
-    War Slate
-    <small>Battle Ready Command Console</small>
-  </a>
-
-  <nav aria-label="Main navigation">
-    <a routerLink="/home" routerLinkActive="active">Command</a>
-
-    @if (accountService.isLoggedIn()) {
-      <a routerLink="/profile" routerLinkActive="active">Profile</a>
-      <a routerLink="/dice" routerLinkActive="active">Dice Roller</a>
-
-      @if (accountService.isAdmin()) {
-        <a routerLink="/admin" routerLinkActive="active">Admin</a>
+<div class="app-shell">
+  <header class="mobile-topbar">
+    <a routerLink="/home" class="mobile-brand">WAR SLATE</a>
+    <div class="mobile-actions">
+      @if (accountService.isLoggedIn()) {
+        <a routerLink="/profile" class="icon-link" aria-label="Profile">
+          <span class="material-symbols-outlined">account_circle</span>
+        </a>
+      } @else {
+        <a routerLink="/login" class="icon-link" aria-label="Login">
+          <span class="material-symbols-outlined">login</span>
+        </a>
       }
+    </div>
+  </header>
 
-      <button type="button" class="link-button" (click)="logout()">Logout</button>
-    } @else {
-      <a routerLink="/login" routerLinkActive="active">Authenticate</a>
-      <a routerLink="/register" routerLinkActive="active">Register</a>
-    }
-  </nav>
-</header>
+  <aside class="side-nav" aria-label="Main navigation">
+    <div class="side-brand-block">
+      <a routerLink="/home" class="side-brand">STRATEGOS</a>
+      <span>Sector-01 High Command</span>
+    </div>
 
-<main>
-  <router-outlet />
-</main>
+    <a routerLink="/session" class="new-mission-button">
+      <span class="material-symbols-outlined">add</span>
+      New Mission
+    </a>
+
+    <nav class="nav-stack">
+      <a routerLink="/home" routerLinkActive="active" class="nav-item">
+        <span class="material-symbols-outlined">dashboard</span>
+        Dashboard
+      </a>
+
+      @if (accountService.isLoggedIn()) {
+        <a routerLink="/session" routerLinkActive="active" class="nav-item">
+          <span class="material-symbols-outlined">military_tech</span>
+          Active Session
+        </a>
+
+        <a routerLink="/dice" routerLinkActive="active" class="nav-item">
+          <span class="material-symbols-outlined">casino</span>
+          Dice Roller
+        </a>
+
+        <a routerLink="/matches" routerLinkActive="active" class="nav-item">
+          <span class="material-symbols-outlined">history</span>
+          Match History
+        </a>
+
+        <a routerLink="/profile" routerLinkActive="active" class="nav-item">
+          <span class="material-symbols-outlined">account_circle</span>
+          Profile
+        </a>
+
+        @if (accountService.isAdmin()) {
+          <a routerLink="/admin" routerLinkActive="active" class="nav-item">
+            <span class="material-symbols-outlined">shield</span>
+            Admin
+          </a>
+        }
+      } @else {
+        <a routerLink="/login" routerLinkActive="active" class="nav-item">
+          <span class="material-symbols-outlined">login</span>
+          Authenticate
+        </a>
+
+        <a routerLink="/register" routerLinkActive="active" class="nav-item">
+          <span class="material-symbols-outlined">person_add</span>
+          Register
+        </a>
+      }
+    </nav>
+
+    <div class="side-footer">
+      @if (accountService.isLoggedIn()) {
+        <div>
+          <strong>Cmdr. Vance</strong>
+          <span>Online</span>
+        </div>
+        <button type="button" class="icon-link logout-icon" (click)="logout()" aria-label="Logout">
+          <span class="material-symbols-outlined">logout</span>
+        </button>
+      } @else {
+        <div>
+          <strong>Guest Link</strong>
+          <span>Awaiting authentication</span>
+        </div>
+      }
+    </div>
+  </aside>
+
+  <main class="app-main">
+    <router-outlet />
+  </main>
+</div>

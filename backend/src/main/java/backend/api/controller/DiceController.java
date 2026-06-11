@@ -58,8 +58,11 @@ public class DiceController {
     }
 
     @PostMapping("/reroll-last")
-    public ResponseEntity<DiceRollResponseDto> rerollLastRoll(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(diceService.rerollLastRoll(user));
+    public ResponseEntity<DiceRollResponseDto> rerollLastRoll(
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) Long sessionId
+    ) {
+        return ResponseEntity.ok(diceService.rerollLastRoll(user, sessionId));
     }
 
     @PostMapping("/reroll-value")
@@ -73,5 +76,13 @@ public class DiceController {
     @GetMapping("/rolls")
     public ResponseEntity<List<DiceRollResponseDto>> getRollHistory(@AuthenticationPrincipal User user) {
         return ResponseEntity.ok(diceService.getRollHistory(user));
+    }
+
+    @GetMapping("/rolls/session/{sessionId}")
+    public ResponseEntity<List<DiceRollResponseDto>> getSessionRollHistory(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long sessionId
+    ) {
+        return ResponseEntity.ok(diceService.getSessionRollHistory(user, sessionId));
     }
 }

@@ -1,5 +1,162 @@
-.actions {
-  display: flex;
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.quick-card {
+  grid-column: span 4;
+}
+
+.engagements-card {
+  grid-column: span 8;
+}
+
+.roster-card-panel,
+.performance-card {
+  grid-column: span 6;
+}
+
+.quick-roll-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 4.5rem;
+}
+
+.quick-roll-preview span {
+  border: 1px solid var(--steel);
+  background: rgba(14, 14, 14, 0.75);
+  color: var(--on-surface);
+  padding: 0.8rem 1rem;
+  font-family: 'Space Grotesk', Inter, sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.wide-button {
+  width: 100%;
+}
+
+.engagement-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
   gap: 1rem;
-  flex-wrap: wrap;
+  border: 1px solid var(--steel);
+  background: rgba(14, 14, 14, 0.85);
+  padding: 1rem;
+}
+
+.engagement-row + .engagement-row {
+  margin-top: 0.75rem;
+}
+
+.engagement-row div {
+  display: grid;
+  gap: 0.1rem;
+}
+
+.engagement-row strong {
+  color: var(--on-surface);
+}
+
+.engagement-row span:not(.status-tag) {
+  color: #8f8f8f;
+}
+
+.engagement-row.muted {
+  opacity: 0.85;
+}
+
+.roster-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.roster-card {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.roster-card span {
+  color: var(--brass);
+  font-family: 'Space Grotesk', Inter, sans-serif;
+  font-size: 1.1rem;
+}
+
+.roster-card strong {
+  color: var(--on-surface);
+}
+
+.roster-card small,
+.performance-footer {
+  color: #8f8f8f;
+}
+
+.performance-placeholder {
+  height: 8rem;
+  border-bottom: 1px solid var(--steel);
+  background-image: linear-gradient(to top, rgba(247, 189, 72, 0.16), transparent 65%);
+  clip-path: polygon(0 85%, 18% 70%, 32% 76%, 50% 42%, 68% 48%, 86% 22%, 100% 30%, 100% 100%, 0 100%);
+  opacity: 0.8;
+}
+
+.performance-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 1100px) {
+  .quick-card,
+  .engagements-card,
+  .roster-card-panel,
+  .performance-card {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width: 700px) {
+  .roster-grid,
+  .engagement-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.engagement-row {
+  color: inherit;
+  text-decoration: none;
+}
+
+.engagement-row:hover {
+  border-color: var(--brass);
+}
+
+.engagement-row:hover strong {
+  color: var(--brass);
+}
+
+.engagement-empty-state {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid var(--steel);
+  background: rgba(14, 14, 14, 0.85);
+  padding: 1rem;
+}
+
+.engagement-empty-state strong {
+  color: var(--on-surface);
+}
+
+.engagement-empty-state span {
+  color: #8f8f8f;
+}
+
+.history-link {
+  margin-top: 0.75rem;
 }

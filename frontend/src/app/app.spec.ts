@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { App } from './app';
 import { provideRouter } from '@angular/router';
+import { App } from './app';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -15,15 +15,18 @@ describe('App', () => {
   it('should create the app', () => {
     const fixture = TestBed.createComponent(App);
     const app = fixture.componentInstance;
+
     expect(app).toBeTruthy();
   });
 
-  it('should render title', () => {
+  it('should render the War Slate mobile brand', () => {
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
+    const mobileBrand = compiled.querySelector('.mobile-brand');
 
-    expect(compiled.textContent).toContain('War Slate');
+    expect(mobileBrand).toBeTruthy();
+    expect(mobileBrand?.textContent?.trim()).toBe('WAR SLATE');
   });
 });

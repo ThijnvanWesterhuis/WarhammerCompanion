@@ -1,73 +1,195 @@
-.form-grid {
+.dice-layout {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
 }
 
-select {
-  width: 100%;
-  border: 1px solid var(--steel);
-  border-radius: 0;
-  padding: 0.75rem 0.85rem;
-  background: var(--surface);
-  color: var(--on-surface);
-  outline: none;
-  font: inherit;
-}
-
-select:focus {
-  border-color: var(--brass);
-  box-shadow: 0 0 0 1px rgba(247, 189, 72, 0.35);
-}
-
+.parameters-panel,
+.results-stack,
 .dice-form,
-.result-panel,
+.preset-editor,
 .preset-list,
 .history-list {
   display: grid;
   gap: 1rem;
 }
 
-.preset-feed {
-  margin: 0;
-  border: 1px solid var(--steel);
-  background: var(--surface);
-  padding: 0.75rem 1rem;
+.preset-editor {
+  border-top: 1px solid var(--steel);
+  margin-top: 0.5rem;
+  padding-top: 1rem;
 }
 
-.result-panel {
-  margin-top: 1.5rem;
+.quantity-control {
+  display: grid;
+  grid-template-columns: 3rem 1fr 3rem;
   border: 1px solid var(--steel);
-  background: var(--surface);
-  padding: 1rem;
+  background: rgba(14, 14, 14, 0.75);
 }
 
-.panel-heading.compact {
-  margin-bottom: 0;
+.quantity-control input,
+.quantity-control button {
+  border: 0;
+  background: transparent;
+  clip-path: none;
+  color: var(--on-surface);
+  text-align: center;
+}
+
+.quantity-control input {
+  font-family: 'Space Grotesk', Inter, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 900;
+}
+
+.threshold-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.threshold-button {
+  min-height: 2rem;
+  padding: 0.25rem;
+  clip-path: none;
+  background: rgba(14, 14, 14, 0.75);
+  color: var(--outline);
+  border-color: var(--steel);
+  font-size: 0.72rem;
+}
+
+.threshold-button.selected {
+  border-color: var(--brass);
+  background: rgba(186, 136, 15, 0.25);
+  color: var(--brass);
+}
+
+.execute-button {
+  display: grid;
+  width: 100%;
+  min-height: 5.5rem;
+  font-size: 1.55rem;
+  letter-spacing: 0.12em;
+}
+
+.execute-button small {
+  color: var(--primary);
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+}
+
+.results-panel {
+  min-height: 26rem;
+  padding-bottom: 0;
+}
+
+.result-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.result-header .status-tag {
+  margin-left: auto;
+}
+
+.score-chip {
+  display: grid;
+  min-width: 5.4rem;
+  border: 1px solid var(--steel);
+  background: var(--tertiary-container);
+  padding: 0.55rem 0.8rem;
+}
+
+.score-chip span {
+  color: var(--tertiary);
+  font-family: 'Space Grotesk', Inter, sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.score-chip strong {
+  color: var(--tertiary);
+  font-family: 'Space Grotesk', Inter, sans-serif;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.fail-chip {
+  background: rgba(147, 0, 10, 0.18);
+  border-color: var(--outline-variant);
+}
+
+.fail-chip span,
+.fail-chip strong {
+  color: var(--primary);
 }
 
 .dice-results {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.6rem, 1fr));
+  gap: 1rem;
+  align-items: start;
 }
 
 .die-result {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  border: 1px solid var(--brass-dark);
-  background: var(--surface-high);
-  color: var(--brass);
+  aspect-ratio: 1;
+  min-height: 4.6rem;
+  border: 1px solid var(--tertiary);
+  background: rgba(40, 72, 72, 0.32);
+  color: var(--tertiary);
   font-family: 'Space Grotesk', Inter, sans-serif;
-  font-size: 1.35rem;
+  font-size: 1.7rem;
   font-weight: 900;
 }
 
-.preset-actions {
-  margin-bottom: 1rem;
+.die-result.success {
+  border-color: var(--tertiary);
+  color: var(--tertiary);
+}
+
+.die-result.fail {
+  border-color: var(--outline-variant);
+  background: rgba(147, 0, 10, 0.16);
+  color: rgba(255, 180, 168, 0.55);
+}
+
+.empty-result {
+  display: grid;
+  place-items: center;
+  min-height: 14rem;
+  text-align: center;
+}
+
+.empty-result .material-symbols-outlined {
+  color: var(--outline);
+  font-size: 3rem;
+}
+
+.reroll-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.5rem -1.5rem 0;
+  border-top: 1px solid var(--steel);
+  background: var(--surface-highest);
+  padding: 0.8rem 1rem;
+}
+
+.preset-feed {
+  margin: 0;
+}
+
+.preset-feed.warning {
+  border-color: var(--brass);
+  color: var(--brass);
 }
 
 .preset-card,
@@ -77,7 +199,7 @@ select:focus {
   justify-content: space-between;
   gap: 1rem;
   border: 1px solid var(--steel);
-  background: var(--surface);
+  background: rgba(14, 14, 14, 0.75);
   padding: 0.9rem 1rem;
 }
 
@@ -131,60 +253,31 @@ button.small {
   overflow-wrap: anywhere;
 }
 
-@media (max-width: 760px) {
-  .form-grid,
-  .preset-card,
-  .history-row {
+@media (max-width: 1080px) {
+  .dice-layout {
     grid-template-columns: 1fr;
   }
+}
 
+@media (max-width: 760px) {
+  .result-header,
+  .reroll-bar,
   .preset-card,
   .history-row {
     align-items: flex-start;
     flex-direction: column;
   }
-}
 
-.preset-feed.warning {
-  border-color: var(--brass);
-  color: var(--brass);
-}
+  .result-header .status-tag {
+    margin-left: 0;
+  }
 
-.preset-feed.warning {
-  border-color: var(--brass);
-  color: var(--brass);
-}
+  .threshold-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 
-.success-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  border: 1px solid var(--steel);
-  background: var(--surface-high);
-  padding: 0.75rem 1rem;
-  color: var(--on-surface-muted);
-  text-transform: uppercase;
-  font-size: 0.82rem;
-}
-
-.success-summary strong {
-  color: var(--brass);
-}
-
-.die-result.success {
-  border-color: var(--brass);
-  color: var(--brass);
-}
-
-.die-result.fail {
-  opacity: 0.55;
-}
-
-.reroll-feed {
-  margin-top: 0;
-}
-
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
+  .reroll-bar {
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
 }
