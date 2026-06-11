@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 public class DiceRollResponseDto {
     private Long id;
+    private Long gameSessionId;
     private DiceType diceType;
     private Integer diceCount;
     private List<Integer> results;
@@ -42,6 +43,7 @@ public class DiceRollResponseDto {
 
         return new DiceRollResponseDto(
                 roll.getId(),
+                roll.getGameSession() == null ? null : roll.getGameSession().getId(),
                 roll.getDiceType(),
                 roll.getDiceCount(),
                 roll.getResults(),

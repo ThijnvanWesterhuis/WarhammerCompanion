@@ -1,0 +1,500 @@
+<div class="page active-session-page">
+  <section class="page-hero compact">
+    <div>
+      <h1>Operation: Ironclad</h1>
+      @if (session(); as currentSession) {
+        <span class="mono-label">
+          Deployment: active battle session // Round {{ currentSession.currentRound }}
+        </span>
+      } @else {
+        <span class="mono-label">Deployment: create a battle session</span>
+      }
+    </div>
+
+    @if (session(); as currentSession) {
+      <div class="session-status-strip">
+        <div>
+          <span>Timer</span>
+          <strong>{{ getFormattedElapsedTime() }}</strong>
+        </div>
+
+        <div class="status-divider"></div>
+
+        <div>
+          <span>Round</span>
+          <strong>{{ formatRound(currentSession.currentRound) }}/05</strong>
+        </div>
+
+        <div class="status-divider"></div>
+
+        <div>
+          <span>Status</span>
+          <strong>{{ currentSession.status }}</strong>
+        </div>
+      </div>
+    }
+  </section>
+
+  @if (errorMessage()) {
+    <p class="error-box">{{ errorMessage() }}</p>
+  }
+
+  @if (successMessage()) {
+    <p class="success-box">{{ successMessage() }}</p>
+  }
+
+  @if (!session()) {
+    <section class="tactical-card active setup-panel">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">Mission Setup</span>
+          <h2>Start Session</h2>
+        </div>
+        <span class="status-tag">Optional Fields</span>
+      </div>
+
+      <form class="session-form" (ngSubmit)="startSession()" novalidate>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="playerOneName">Player One</label>
+            <input
+              id="playerOneName"
+              name="playerOneName"
+              placeholder="Commander Thorne"
+              [(ngModel)]="playerOneName"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="playerTwoName">Player Two</label>
+            <input
+              id="playerTwoName"
+              name="playerTwoName"
+              placeholder="Warlord Skarr"
+              [(ngModel)]="playerTwoName"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="playerOneFaction">Player One Faction</label>
+            <select
+              id="playerOneFaction"
+              name="playerOneFaction"
+              [(ngModel)]="playerOneFaction"
+            >
+              <option value="">Select a faction</option>
+
+              @for (faction of warhammerFactions; track faction) {
+                <option [value]="faction">{{ faction }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="playerTwoFaction">Player Two Faction</label>
+            <select
+              id="playerTwoFaction"
+              name="playerTwoFaction"
+              [(ngModel)]="playerTwoFaction"
+            >
+              <option value="">Select a faction</option>
+
+              @for (faction of warhammerFactions; track faction) {
+                <option [value]="faction">{{ faction }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="missionName">Mission</label>
+            <input
+              id="missionName"
+              name="missionName"
+              placeholder="Take and Hold"
+              [(ngModel)]="missionName"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="deploymentMap">Deployment Map</label>
+            <input
+              id="deploymentMap"
+              name="deploymentMap"
+              placeholder="Dawn of War"
+              [(ngModel)]="deploymentMap"
+            />
+          </div>
+
+          <div class="form-group full-width">
+            <label for="notes">Tactical Notes</label>
+            <input
+              id="notes"
+              name="notes"
+              placeholder="Mission notes, reminders, deployment info..."
+              [(ngModel)]="notes"
+            />
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit">Start New Mission</button>
+        </div>
+      </form>
+    </section>
+  }
+
+  @if (session(); as currentSession) {
+    <section class="score-grid">
+      <article class="tactical-card score-card active">
+        <div class="score-heading">
+          <h2>{{ currentSession.playerOneName || 'Player One' }}</h2>
+          <span class="status-tag">P1: {{ currentSession.playerOneFaction || 'Faction' }}</span>
+        </div>
+
+        <div class="score-control">
+          <button
+            type="button"
+            class="secondary score-button"
+            (click)="updateScore(currentSession.playerOneScore - 1, currentSession.playerTwoScore)"
+          >
+            -
+          </button>
+
+          <strong>{{ currentSession.playerOneScore }}</strong>
+
+          <button
+            type="button"
+            class="secondary score-button"
+            (click)="updateScore(currentSession.playerOneScore + 1, currentSession.playerTwoScore)"
+          >
+            +
+          </button>
+        </div>
+
+        <div class="round-cells">
+          @for (round of roundNumbers; track round) {
+            <div class="round-cell" [class.current]="round === currentSession.currentRound">
+              <span>R{{ round }}</span>
+              <strong>{{ getRoundScore(round, 'one') }}</strong>
+            </div>
+          }
+        </div>
+      </article>
+
+      <article class="tactical-card score-card opponent-card">
+        <div class="score-heading">
+          <h2>{{ currentSession.playerTwoName || 'Player Two' }}</h2>
+          <span class="status-tag danger">P2: {{ currentSession.playerTwoFaction || 'Faction' }}</span>
+        </div>
+
+        <div class="score-control">
+          <button
+            type="button"
+            class="secondary score-button"
+            (click)="updateScore(currentSession.playerOneScore, currentSession.playerTwoScore - 1)"
+          >
+            -
+          </button>
+
+          <strong>{{ currentSession.playerTwoScore }}</strong>
+
+          <button
+            type="button"
+            class="secondary score-button"
+            (click)="updateScore(currentSession.playerOneScore, currentSession.playerTwoScore + 1)"
+          >
+            +
+          </button>
+        </div>
+
+        <div class="round-cells">
+          @for (round of roundNumbers; track round) {
+            <div class="round-cell" [class.current]="round === currentSession.currentRound">
+              <span>R{{ round }}</span>
+              <strong>{{ getRoundScore(round, 'two') }}</strong>
+            </div>
+          }
+        </div>
+      </article>
+    </section>
+
+    <div class="round-controls tactical-card">
+      <span class="mono-label">Round Protocol</span>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="secondary"
+          [disabled]="currentSession.currentRound <= 1"
+          (click)="updateRound(currentSession.currentRound - 1)"
+        >
+          Previous Round
+        </button>
+
+        <button
+          type="button"
+          class="secondary"
+          [disabled]="currentSession.currentRound >= roundNumbers.length"
+          (click)="updateRound(currentSession.currentRound + 1)"
+        >
+          Next Round
+        </button>
+
+        <button type="button" class="secondary" (click)="updateScore(0, 0)">
+          Reset Score
+        </button>
+      </div>
+    </div>
+
+    <section class="session-grid">
+      <article class="tactical-card objective-panel">
+        <div class="panel-heading">
+          <div>
+            <span class="eyebrow">Primary Objective</span>
+            <h3>Battle Tracking</h3>
+          </div>
+          <span class="status-tag">Alpha-Tango</span>
+        </div>
+
+        <p>
+          Track the current battle score, round number, mission details and dice rolls for this live session.
+        </p>
+
+        <div class="objective-cells">
+          <div class="data-cell">
+            <span class="cell-label">Started</span>
+            <strong>{{ formatDateTime(currentSession.startedAt) }}</strong>
+            <small>Session start time</small>
+          </div>
+
+          <div class="data-cell">
+            <span class="cell-label">Elapsed</span>
+            <strong>{{ getFormattedElapsedTime() }}</strong>
+            <small>Live match timer</small>
+          </div>
+
+          <div class="data-cell">
+            <span class="cell-label">Mission</span>
+            <strong>{{ currentSession.missionName || '-' }}</strong>
+            <small>Selected mission</small>
+          </div>
+
+          <div class="data-cell">
+            <span class="cell-label">Deployment</span>
+            <strong>{{ currentSession.deploymentMap || '-' }}</strong>
+            <small>Deployment map</small>
+          </div>
+        </div>
+      </article>
+
+      <aside class="tactical-card quick-dice-panel">
+        <div class="panel-heading">
+          <div>
+            <span class="eyebrow">Quick Dice</span>
+            <h3>Session Roll</h3>
+          </div>
+          <span class="status-tag">{{ diceType }}</span>
+        </div>
+
+        <form class="dice-form" (ngSubmit)="rollDice()" novalidate>
+          <div class="form-grid single">
+            <div class="form-group">
+              <label for="diceType">Dice Type</label>
+              <select id="diceType" name="diceType" [(ngModel)]="diceType">
+                @for (type of diceTypes; track type) {
+                  <option [value]="type">{{ type }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="diceCount">Amount</label>
+              <input
+                id="diceCount"
+                name="diceCount"
+                type="number"
+                min="1"
+                max="100"
+                [(ngModel)]="diceCount"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="successThreshold">Success Threshold</label>
+              <select
+                id="successThreshold"
+                name="successThreshold"
+                [(ngModel)]="successThreshold"
+              >
+                <option [ngValue]="null">No threshold</option>
+
+                @for (threshold of thresholdOptions; track threshold) {
+                  <option [ngValue]="threshold">{{ threshold }}+</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit">Roll Dice</button>
+            <button type="button" class="secondary" (click)="rerollLastRoll()">Reroll Last</button>
+            <button type="button" class="secondary" [disabled]="!canRerollOnes" (click)="rerollAllOnes()">1s Only</button>
+          </div>
+        </form>
+
+        @if (lastRoll(); as roll) {
+          <div class="dice-results compact-dice">
+            @for (result of roll.results; track $index) {
+              <span
+                class="die-result"
+                [class.success]="isSuccess(result, roll)"
+                [class.fail]="isFail(result, roll)"
+              >
+                {{ result }}
+              </span>
+            }
+          </div>
+
+          @if (roll.successThreshold) {
+            <div class="success-summary">
+              <span>Threshold {{ roll.successThreshold }}+</span>
+              <span>Successes: <strong>{{ roll.successCount }}</strong></span>
+              <span>Fails: <strong>{{ roll.failCount }}</strong></span>
+            </div>
+          }
+        }
+      </aside>
+    </section>
+
+    <section class="tactical-card history-panel">
+      <div class="panel-heading compact">
+        <div>
+          <span class="eyebrow">Live Feed</span>
+          <h3>Session Roll History</h3>
+        </div>
+      </div>
+
+      <div class="history-list">
+        @for (roll of rollHistory(); track roll.id) {
+          <article class="history-row">
+            <div>
+              <strong>{{ roll.diceCount }} {{ roll.diceType }}</strong>
+
+              @if (roll.rerollType) {
+                <span>Reroll: {{ roll.rerollType }}</span>
+              }
+            </div>
+
+            <span class="history-results">{{ roll.results.join(', ') }}</span>
+
+            @if (roll.successThreshold) {
+              <span class="status-tag">{{ roll.successCount }} success / {{ roll.failCount }} fail</span>
+            } @else {
+              <span class="status-tag">Total {{ roll.total }}</span>
+            }
+          </article>
+        } @empty {
+          <p>No rolls in this session yet.</p>
+        }
+      </div>
+    </section>
+
+    <div class="session-actions">
+      <button type="button" class="secondary" (click)="openSaveSummary()">
+        Save Match
+      </button>
+    </div>
+
+    @if (showSaveSummary()) {
+      <section class="save-summary-backdrop">
+        <article class="tactical-card save-summary-card active">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">Save Confirmation</span>
+              <h2>Match Summary</h2>
+            </div>
+
+            <span
+              class="status-tag"
+              [class.warning]="getResultTagClass(currentSession) === 'warning'"
+              [class.danger]="getResultTagClass(currentSession) === 'danger'"
+            >
+              {{ getResultLabel(currentSession) }}
+            </span>
+          </div>
+
+          <div class="summary-grid">
+            <div>
+              <span class="cell-label">Players</span>
+              <strong>
+                {{ currentSession.playerOneName || 'Player One' }}
+                vs
+                {{ currentSession.playerTwoName || 'Player Two' }}
+              </strong>
+            </div>
+
+            <div>
+              <span class="cell-label">Factions</span>
+              <strong>
+                {{ currentSession.playerOneFaction || '-' }}
+                vs
+                {{ currentSession.playerTwoFaction || '-' }}
+              </strong>
+            </div>
+
+            <div>
+              <span class="cell-label">Mission</span>
+              <strong>{{ currentSession.missionName || '-' }}</strong>
+            </div>
+
+            <div>
+              <span class="cell-label">Deployment</span>
+              <strong>{{ currentSession.deploymentMap || '-' }}</strong>
+            </div>
+
+            <div>
+              <span class="cell-label">Final Score</span>
+              <strong>{{ currentSession.playerOneScore }} - {{ currentSession.playerTwoScore }}</strong>
+            </div>
+
+            <div>
+              <span class="cell-label">Timer</span>
+              <strong>{{ getFormattedElapsedTime() }}</strong>
+            </div>
+
+            <div>
+              <span class="cell-label">Started</span>
+              <strong>{{ formatDateTime(currentSession.startedAt) }}</strong>
+            </div>
+
+            <div>
+              <span class="cell-label">Result</span>
+              <strong>{{ getResultLabel(currentSession) }}</strong>
+            </div>
+
+            <div class="full-width">
+              <span class="cell-label">Notes</span>
+              <p>{{ currentSession.notes || 'No notes filled in.' }}</p>
+            </div>
+          </div>
+
+          <div class="round-summary-list">
+            @for (round of currentSession.roundScores; track round.id) {
+              <div class="round-summary-row">
+                <span>Round {{ round.roundNumber }}</span>
+                <strong>{{ round.playerOneScore }} - {{ round.playerTwoScore }}</strong>
+              </div>
+            } @empty {
+              <p>No round scores have been saved yet.</p>
+            }
+          </div>
+
+          <div class="form-actions summary-actions">
+            <button type="button" class="secondary" (click)="closeSaveSummary()">Cancel</button>
+            <button type="button" (click)="confirmEndSession()">Confirm Save</button>
+          </div>
+        </article>
+      </section>
+    }
+  }
+</div>

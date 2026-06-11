@@ -22,4 +22,6 @@ public class DiceRollRequestDto {
     private Integer successThreshold;
 
     private Long presetId;
+
+    private Long sessionId;
 }

@@ -1,5 +1,11 @@
-<div class="page">
-  <div class="card auth-card">
+<div class="auth-access-page">
+  <section class="auth-intro">
+    <h1>War Slate</h1>
+    <span class="mono-label">New commander provisioning</span>
+    <p>Create a tactical account so sessions, dice presets and future match data can be linked to your command profile.</p>
+  </section>
+
+  <section class="card auth-card active">
     <div class="panel-heading">
       <div>
         <span class="eyebrow">New Commander</span>
@@ -18,16 +24,18 @@
     }
 
     <form (ngSubmit)="onSubmit()" novalidate>
-      <div class="form-group">
+      <div class="form-group command-input">
         <label for="username">Operator ID</label>
-        <input
-          id="username"
-          name="username"
-          type="text"
-          placeholder="CHOOSE_USERNAME"
-          [class.input-error]="!!usernameWarning || !!getFieldServerError('username')"
-          [(ngModel)]="username"
-        />
+        <div class="input-shell" [class.input-error]="!!usernameWarning || !!getFieldServerError('username')">
+          <span class="material-symbols-outlined">badge</span>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="CHOOSE_USERNAME"
+            [(ngModel)]="username"
+          />
+        </div>
         @if (usernameWarning) {
           <span class="field-error">{{ usernameWarning }}</span>
         }
@@ -36,16 +44,18 @@
         }
       </div>
 
-      <div class="form-group">
+      <div class="form-group command-input">
         <label for="email">Email Routing</label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          placeholder="ENTER_EMAIL_ROUTING"
-          [class.input-error]="!!emailWarning || !!getFieldServerError('email')"
-          [(ngModel)]="email"
-        />
+        <div class="input-shell" [class.input-error]="!!emailWarning || !!getFieldServerError('email')">
+          <span class="material-symbols-outlined">alternate_email</span>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="ENTER_EMAIL_ROUTING"
+            [(ngModel)]="email"
+          />
+        </div>
         @if (emailWarning) {
           <span class="field-error">{{ emailWarning }}</span>
         }
@@ -54,16 +64,18 @@
         }
       </div>
 
-      <div class="form-group">
+      <div class="form-group command-input">
         <label for="password">Security Cipher</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          placeholder="CREATE_CIPHER_KEY"
-          [class.input-error]="passwordWarnings.length > 0 || !!getFieldServerError('password')"
-          [(ngModel)]="password"
-        />
+        <div class="input-shell" [class.input-error]="passwordWarnings.length > 0 || !!getFieldServerError('password')">
+          <span class="material-symbols-outlined">lock</span>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="CREATE_CIPHER_KEY"
+            [(ngModel)]="password"
+          />
+        </div>
         <span class="field-hint">Use at least 8 characters, 1 number, and 1 special character.</span>
 
         @if (passwordWarnings.length > 0) {
@@ -79,16 +91,18 @@
         }
       </div>
 
-      <div class="form-group">
+      <div class="form-group command-input">
         <label for="confirmPassword">Confirm Cipher</label>
-        <input
-          id="confirmPassword"
-          name="confirmPassword"
-          type="password"
-          placeholder="REPEAT_CIPHER_KEY"
-          [class.input-error]="!!confirmPasswordWarning || !!getFieldServerError('confirmPassword')"
-          [(ngModel)]="confirmPassword"
-        />
+        <div class="input-shell" [class.input-error]="!!confirmPasswordWarning || !!getFieldServerError('confirmPassword')">
+          <span class="material-symbols-outlined">verified_user</span>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            placeholder="REPEAT_CIPHER_KEY"
+            [(ngModel)]="confirmPassword"
+          />
+        </div>
         @if (confirmPasswordWarning) {
           <span class="field-error">{{ confirmPasswordWarning }}</span>
         }
@@ -98,9 +112,9 @@
       </div>
 
       <div class="form-actions">
-        <button type="submit">Create Account</button>
+        <button type="submit" class="wide-auth-button">Create Account</button>
         <a routerLink="/login" class="button secondary">Already Registered</a>
       </div>
     </form>
-  </div>
+  </section>
 </div>

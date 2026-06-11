@@ -32,8 +32,9 @@ export class DiceService {
     return this.api.post<DiceRoll>('/dice/roll', request);
   }
 
-  rerollLast() {
-    return this.api.post<DiceRoll>('/dice/reroll-last', {});
+  rerollLast(sessionId?: number | null) {
+    const query = sessionId ? `?sessionId=${sessionId}` : '';
+    return this.api.post<DiceRoll>(`/dice/reroll-last${query}`, {});
   }
 
   rerollValue(request: DiceRerollValueRequest) {
@@ -42,5 +43,9 @@ export class DiceService {
 
   getRollHistory() {
     return this.api.get<DiceRoll[]>('/dice/rolls');
+  }
+
+  getSessionRollHistory(sessionId: number) {
+    return this.api.get<DiceRoll[]>(`/dice/rolls/session/${sessionId}`);
   }
 }

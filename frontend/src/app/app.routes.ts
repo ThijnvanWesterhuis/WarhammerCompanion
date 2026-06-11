@@ -42,6 +42,34 @@ export const routes: Routes = [
   },
 
   {
+    path: 'session',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./session/pages/active-session/active-session').then(m => m.ActiveSession)
+  },
+
+  {
+    path: 'matches',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./session/pages/match-history/match-history').then(m => m.MatchHistory)
+  },
+
+  {
+    path: 'matches/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./session/pages/match-detail/match-detail').then(m => m.MatchDetail)
+  },
+
+  {
+    path: 'matches/:id/edit',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./session/pages/match-edit/match-edit').then(m => m.MatchEdit)
+  },
+
+  {
     path: 'admin',
     canActivate: [authGuard, adminGuard],
     loadComponent: () =>
