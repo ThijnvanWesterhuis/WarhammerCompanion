@@ -1,0 +1,64 @@
+name: WH E2E Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - frontend/**
+      - backend/**
+      - docker/**
+      - docker-compose.yml
+      - .github/workflows/pipeline-e2e.yml
+
+  pull_request:
+    paths:
+      - frontend/**
+      - backend/**
+      - docker/**
+      - docker-compose.yml
+      - .github/workflows/pipeline-e2e.yml
+
+jobs:
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Install Playwright browser
+        run: |
+          cd frontend
+          npx playwright install --with-deps chromium
+
+      - name: Start application with Docker Compose
+        run: docker compose up --build -d
+
+      - name: Wait for backend and frontend
+        run: |
+          timeout 120 bash -c 'until (echo > /dev/tcp/localhost/8080) >/dev/null 2>&1; do sleep 2; done'
+          timeout 120 bash -c 'until (echo > /dev/tcp/localhost/4200) >/dev/null 2>&1; do sleep 2; done'
+
+      - name: Run E2E tests
+        env:
+          E2E_BASE_URL: http://localhost:4200
+          API_URL: http://localhost:8080
+        run: |
+          cd frontend
+          npm run e2e
+
+      - name: Stop Docker Compose
+        if: always()
+        run: docker compose down -v
