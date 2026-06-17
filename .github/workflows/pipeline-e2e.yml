@@ -46,10 +46,41 @@ jobs:
       - name: Start application with Docker Compose
         run: docker compose up --build -d
 
-      - name: Wait for backend and frontend
+      - name: Show Docker containers
+        run: docker compose ps
+
+      - name: Wait for backend health endpoint
         run: |
-          timeout 120 bash -c 'until (echo > /dev/tcp/localhost/8080) >/dev/null 2>&1; do sleep 2; done'
-          timeout 120 bash -c 'until (echo > /dev/tcp/localhost/4200) >/dev/null 2>&1; do sleep 2; done'
+          for i in {1..60}; do
+            if curl -s http://localhost:8080/health | grep "UP"; then
+              echo "Backend is ready"
+              exit 0
+            fi
+      
+            echo "Waiting for backend..."
+            sleep 2
+          done
+      
+          echo "Backend did not become ready"
+          docker compose logs api
+          docker compose logs postgres
+          exit 1
+
+      - name: Wait for frontend
+        run: |
+          for i in {1..60}; do
+            if curl -s http://localhost:4200 > /dev/null; then
+              echo "Frontend is ready"
+              exit 0
+            fi
+      
+            echo "Waiting for frontend..."
+            sleep 2
+          done
+      
+          echo "Frontend did not become ready"
+          docker compose logs web
+          exit 1
 
       - name: Run E2E tests
         env:
