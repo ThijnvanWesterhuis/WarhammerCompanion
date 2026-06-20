@@ -49,6 +49,13 @@ export const routes: Routes = [
   },
 
   {
+    path: 'army-lists',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./army-builder/pages/army-builder/army-builder').then(m => m.ArmyBuilder)
+  },
+
+  {
     path: 'matches',
     canActivate: [authGuard],
     loadComponent: () =>

@@ -1,0 +1,390 @@
+<div class="page army-builder-page">
+  <section class="page-hero compact">
+    <div>
+      <h1>Army Builder</h1>
+      <span class="mono-label">
+        Edition-aware roster forge // {{ form.gameEditionCode || 'No Edition' }} // {{ form.faction || 'No Faction' }}
+      </span>
+    </div>
+
+    <div class="hero-actions">
+      <span class="status-tag warning">{{ totalPoints }} / {{ form.pointsLimit }} pts</span>
+      <button type="button" class="secondary" (click)="resetForm()">
+        New Army List
+      </button>
+    </div>
+  </section>
+
+  @if (errorMessage()) {
+    <p class="error-box">{{ errorMessage() }}</p>
+  }
+
+  @if (successMessage()) {
+    <p class="success-box">{{ successMessage() }}</p>
+  }
+
+  <section class="army-layout">
+    <aside class="tactical-card active army-list-panel">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">Saved Lists</span>
+          <h2>Your Armies</h2>
+        </div>
+        <span class="status-tag">{{ armyLists().length }}</span>
+      </div>
+
+      <form class="filter-grid" (ngSubmit)="applyFilters()" novalidate>
+        <div class="form-group">
+          <label for="search">Search</label>
+          <input
+            id="search"
+            type="search"
+            name="search"
+            placeholder="Search army lists"
+            [(ngModel)]="search"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="factionFilter">Faction</label>
+          <select id="factionFilter" name="factionFilter" [(ngModel)]="factionFilter">
+            <option value="">All factions</option>
+            @for (faction of factions; track faction) {
+              <option [value]="faction">{{ faction }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="editionFilter">Edition</label>
+          <select id="editionFilter" name="editionFilter" [(ngModel)]="editionFilter">
+            <option value="">All editions</option>
+            @for (edition of editions(); track edition.code) {
+              <option [value]="edition.code">{{ edition.displayName }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit">Apply</button>
+          <button type="button" class="secondary" (click)="clearFilters()">
+            Clear
+          </button>
+        </div>
+      </form>
+
+      @if (loading()) {
+        <p class="field-hint">Loading army lists...</p>
+      } @else if (armyLists().length === 0) {
+        <p class="empty-state">No army lists found yet.</p>
+      } @else {
+        <div class="army-list-stack">
+          @for (armyList of armyLists(); track armyList.id) {
+            <article
+              class="army-list-card"
+              [class.selected]="selectedArmyList()?.id === armyList.id"
+              (click)="selectArmyList(armyList)"
+            >
+              <div class="army-list-main">
+                <strong>{{ armyList.name }}</strong>
+                <span>{{ armyList.faction }} // {{ armyList.gameEdition.displayName }}</span>
+                <small>{{ armyList.armyRule || 'No detachment selected' }}</small>
+              </div>
+
+              <div class="army-list-points">
+                <strong>{{ armyList.totalPoints }}</strong>
+                <span>/ {{ armyList.pointsLimit }} pts</span>
+              </div>
+            </article>
+          }
+        </div>
+
+        <div class="pagination-controls army-pagination">
+          <button type="button" class="secondary" [disabled]="page() === 0" (click)="previousPage()">
+            Previous
+          </button>
+
+          <span class="mono-label">Page {{ page() + 1 }} / {{ totalPages() || 1 }}</span>
+
+          <button
+            type="button"
+            class="secondary"
+            [disabled]="page() + 1 >= totalPages()"
+            (click)="nextPage()"
+          >
+            Next
+          </button>
+        </div>
+      }
+    </aside>
+
+    <section class="tactical-card builder-panel">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">{{ isEditing ? 'Edit List' : 'Create List' }}</span>
+          <h2>{{ form.name || 'New Army List' }}</h2>
+        </div>
+
+        @if (selectedArmyList()) {
+          <div class="builder-actions">
+            <button type="button" class="secondary small" (click)="duplicateArmyList(selectedArmyList()!)">
+              Duplicate
+            </button>
+            <button type="button" class="danger-button small" (click)="deleteArmyList(selectedArmyList()!)">
+              Delete
+            </button>
+          </div>
+        }
+      </div>
+
+      <form class="army-form" #armyForm="ngForm" (ngSubmit)="saveArmyList()" novalidate>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">Army List Name</label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              required
+              maxlength="100"
+              placeholder="Example: Ultramarines 1000pts"
+              [(ngModel)]="form.name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="gameEditionCode">Edition</label>
+            <select
+              id="gameEditionCode"
+              name="gameEditionCode"
+              required
+              [(ngModel)]="form.gameEditionCode"
+              (ngModelChange)="onEditionOrFactionChanged()"
+            >
+              @for (edition of editions(); track edition.code) {
+                <option [value]="edition.code">{{ edition.displayName }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="faction">Faction</label>
+            <select
+              id="faction"
+              name="faction"
+              required
+              [(ngModel)]="form.faction"
+              (ngModelChange)="onEditionOrFactionChanged()"
+            >
+              @for (faction of factions; track faction) {
+                <option [value]="faction">{{ faction }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="armyRule">{{ armyRuleLabel }}</label>
+            <select
+              id="armyRule"
+              name="armyRule"
+              required
+              [(ngModel)]="form.armyRule"
+            >
+              @for (option of armyRuleOptions; track option) {
+                <option [value]="option">{{ option }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="pointsLimit">Points Limit</label>
+            <select
+              id="pointsLimit"
+              name="pointsLimit"
+              required
+              [(ngModel)]="form.pointsLimit"
+            >
+              @for (pointsLimit of pointsLimitOptions; track pointsLimit) {
+                <option [ngValue]="pointsLimit">{{ pointsLimit }} points</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Tactical Notes</label>
+          <textarea
+            id="description"
+            name="description"
+            rows="3"
+            maxlength="1000"
+            placeholder="Notes about this army list"
+            [(ngModel)]="form.description"
+          ></textarea>
+        </div>
+
+        <div class="stat-grid army-stat-grid">
+          <div class="data-cell">
+            <span class="cell-label">Edition</span>
+            <strong>{{ form.gameEditionCode }}</strong>
+          </div>
+
+          <div class="data-cell">
+            <span class="cell-label">Ruleset</span>
+            <strong>{{ form.armyRule }}</strong>
+          </div>
+
+          <div class="data-cell">
+            <span class="cell-label">Total Points</span>
+            <strong>{{ totalPoints }}</strong>
+          </div>
+
+          <div class="data-cell">
+            <span class="cell-label">Remaining</span>
+            <strong [class.negative]="remainingPoints < 0">{{ remainingPoints }}</strong>
+          </div>
+        </div>
+
+        <p class="preset-feed rules-help">
+          {{ armyRuleHelpText }}
+        </p>
+
+        <section class="console-panel unit-catalog-panel">
+          <div class="panel-heading compact">
+            <div>
+              <span class="eyebrow">Unit Catalog</span>
+              <h3>Add Units</h3>
+            </div>
+            <span class="status-tag">{{ unitCatalog().length }}</span>
+          </div>
+
+          @if (catalogMessage) {
+            <p class="field-hint">{{ catalogMessage }}</p>
+          }
+
+          @if (unitCatalog().length > 0) {
+            <div class="catalog-controls">
+              <div class="form-group catalog-search-group">
+                <label for="catalogSearch">Search Units</label>
+                <input
+                  id="catalogSearch"
+                  type="search"
+                  name="catalogSearch"
+                  placeholder="Search units, roles or keywords"
+                  [(ngModel)]="catalogSearch"
+                />
+              </div>
+
+              <div class="form-group catalog-select-group">
+                <label for="selectedCatalogUnitId">Catalog Unit</label>
+                <select id="selectedCatalogUnitId" name="selectedCatalogUnitId" [(ngModel)]="selectedCatalogUnitId">
+                  <option value="">Select a unit</option>
+                  @for (unit of filteredCatalogUnits(); track unit.id) {
+                    <option [value]="unit.id">
+                      {{ unit.name }} // {{ unit.unitType }} // {{ unit.points }} pts
+                    </option>
+                  }
+                </select>
+              </div>
+
+              <button type="button" (click)="addSelectedCatalogUnit()">
+                Add Unit
+              </button>
+            </div>
+          }
+
+          <button type="button" class="secondary" (click)="addCustomUnit()">
+            Add Custom Unit
+          </button>
+        </section>
+
+        <section class="console-panel units-panel">
+          <div class="panel-heading compact">
+            <div>
+              <span class="eyebrow">Selected Units</span>
+              <h3>Army List Units</h3>
+            </div>
+
+            <span class="status-tag warning">{{ form.units.length }} units</span>
+          </div>
+
+          @if (form.units.length === 0) {
+            <p class="empty-state">
+              No units added yet. Select a unit from the catalog to start building your army.
+            </p>
+          } @else {
+            <div class="unit-table">
+              <div class="unit-table-header">
+                <span>Name</span>
+                <span>Type / Role</span>
+                <span>Points</span>
+                <span>Qty</span>
+                <span>Total</span>
+                <span></span>
+              </div>
+
+              @for (unit of form.units; track $index; let i = $index) {
+                <div class="unit-row">
+                  <input
+                    type="text"
+                    [name]="'unitName' + i"
+                    required
+                    [(ngModel)]="unit.name"
+                  />
+
+                  <input
+                    type="text"
+                    [name]="'unitType' + i"
+                    placeholder="Type or role"
+                    [(ngModel)]="unit.unitType"
+                  />
+
+                  <input
+                    type="number"
+                    [name]="'unitPoints' + i"
+                    min="0"
+                    [(ngModel)]="unit.points"
+                  />
+
+                  <input
+                    type="number"
+                    [name]="'unitQuantity' + i"
+                    min="1"
+                    [(ngModel)]="unit.quantity"
+                  />
+
+                  <strong>{{ getUnitTotal(unit) }}</strong>
+
+                  <button type="button" class="danger-button remove-unit-button" (click)="removeUnit(i)">
+                    ×
+                  </button>
+
+                  <textarea
+                    class="unit-notes"
+                    [name]="'unitNotes' + i"
+                    rows="2"
+                    placeholder="Optional notes"
+                    [(ngModel)]="unit.notes"
+                  ></textarea>
+                </div>
+              }
+            </div>
+          }
+        </section>
+
+        <div class="form-actions submit-row">
+          <button type="button" class="secondary" (click)="resetForm()">
+            Reset
+          </button>
+
+          <button
+            type="submit"
+            [disabled]="armyForm.invalid || saving()"
+          >
+            {{ saving() ? 'Saving...' : isEditing ? 'Update Army List' : 'Create Army List' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </section>
+</div>
