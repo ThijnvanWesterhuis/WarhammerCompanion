@@ -89,7 +89,7 @@ class ArmyListServiceTest {
         assertEquals(500, savedArmyList.getPointsLimit());
         assertEquals(240, savedArmyList.getTotalPoints());
         assertEquals(2, savedArmyList.getUnits().size());
-        assertSame(savedArmyList, savedArmyList.getUnits().getFirst().getArmyList());
+        assertSame(savedArmyList, savedArmyList.getUnits().get(0).getArmyList());
 
         assertEquals(240, response.getTotalPoints());
         assertEquals(260, response.getRemainingPoints());
@@ -213,8 +213,8 @@ class ArmyListServiceTest {
         assertEquals(240, copy.getTotalPoints());
         assertEquals(2, copy.getUnits().size());
 
-        assertNotSame(original.getUnits().getFirst(), copy.getUnits().getFirst());
-        assertSame(copy, copy.getUnits().getFirst().getArmyList());
+        assertNotSame(original.getUnits().get(0), copy.getUnits().get(0));
+        assertSame(copy, copy.getUnits().get(0).getArmyList());
 
         assertEquals("Original List Copy", response.getName());
         assertEquals(2, response.getUnits().size());
@@ -271,7 +271,7 @@ class ArmyListServiceTest {
         assertEquals(0, pageable.getPageNumber());
         assertEquals(50, pageable.getPageSize());
         assertEquals(1, response.getContent().size());
-        assertEquals("Tyranid Invasion", response.getContent().getFirst().getName());
+        assertEquals("Tyranid Invasion", response.getContent().get(0).getName());
     }
 
     @Test
