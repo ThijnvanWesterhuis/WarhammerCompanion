@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 
 import { DiceRoll, DiceType } from '../../../dice/models/dice.models';
 import { DiceService } from '../../../dice/services/dice.service';
@@ -30,6 +30,7 @@ export class ActiveSession implements OnInit, OnDestroy {
   notes = '';
   missionName = '';
   deploymentMap = '';
+  missionBriefing = '';
 
   diceType: DiceType = 'D6';
   diceCount = 5;
@@ -44,6 +45,7 @@ export class ActiveSession implements OnInit, OnDestroy {
 
   errorMessage = signal('');
   successMessage = signal('');
+  isGeneratingMission = signal(false);
 
   private realtimeSubscription?: Subscription;
   private timerIntervalId?: number;
@@ -82,6 +84,29 @@ export class ActiveSession implements OnInit, OnDestroy {
 
   formatRound(round: number) {
     return round.toString().padStart(2, '0');
+  }
+
+  generateMissionWithAi() {
+    this.clearMessages();
+    this.isGeneratingMission.set(true);
+
+    this.sessionService.generateMission({
+      playerOneFaction: this.playerOneFaction.trim() || null,
+      playerTwoFaction: this.playerTwoFaction.trim() || null,
+      notes: this.notes.trim() || null
+    }).pipe(
+      finalize(() => this.isGeneratingMission.set(false))
+    ).subscribe({
+      next: mission => {
+        this.missionName = mission.missionName;
+        this.deploymentMap = mission.deploymentMap;
+        this.missionBriefing = mission.missionBriefing;
+        this.notes = this.addAiBriefingToNotes(this.notes, mission.missionBriefing);
+
+        this.successMessage.set('AI mission generated. Check it before starting the session.');
+      },
+      error: error => this.handleError(error, 'Could not generate AI mission')
+    });
   }
 
   startSession() {
@@ -430,6 +455,18 @@ export class ActiveSession implements OnInit, OnDestroy {
     return [hours, minutes, seconds]
       .map(value => value.toString().padStart(2, '0'))
       .join(':');
+  }
+
+  private addAiBriefingToNotes(currentNotes: string, missionBriefing: string) {
+    const notesWithoutOldAiBriefing = currentNotes
+      .replace(/\n\nAI Mission Briefing:[\s\S]*$/g, '')
+      .trim();
+
+    const aiBriefing = `AI Mission Briefing:\n${missionBriefing.trim()}`;
+
+    return [notesWithoutOldAiBriefing, aiBriefing]
+      .filter(part => part.length > 0)
+      .join('\n\n');
   }
 
   private clearMessages() {

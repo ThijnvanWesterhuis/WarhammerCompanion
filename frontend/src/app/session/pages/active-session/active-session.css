@@ -354,4 +354,12 @@
     align-items: stretch;
     flex-direction: column;
   }
+
+  .mission-briefing {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--steel);
+    background: rgba(14, 14, 14, 0.75);
+    color: var(--on-surface-muted);
+  }
 }

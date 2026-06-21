@@ -16,3 +16,7 @@ application:
     jwt:
       secret-key: ${JWT_SECRET_KEY:MTIzNDU2Nzg5MDEyMzQ1Njc4OTAxMjM0NTY3ODkwMTI=}
       expiration: ${JWT_EXPIRATION:86400000}
+
+openai:
+  api-key: ${OPENAI_API_KEY:}
+  model: ${OPENAI_MODEL:gpt-4.1-mini}
