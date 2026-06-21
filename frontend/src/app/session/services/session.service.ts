@@ -8,12 +8,28 @@ import {
   PageResponse
 } from '../models/session.models';
 
+export interface MissionGenerationRequest {
+  playerOneFaction: string | null;
+  playerTwoFaction: string | null;
+  notes: string | null;
+}
+
+export interface MissionGenerationResponse {
+  missionName: string;
+  deploymentMap: string;
+  missionBriefing: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SessionService {
   constructor(private api: ApiService) {}
 
   startSession(request: GameSessionRequest) {
     return this.api.post<GameSession>('/sessions/start', request);
+  }
+
+  generateMission(request: MissionGenerationRequest) {
+    return this.api.post<MissionGenerationResponse>('/ai/mission', request);
   }
 
   getActiveSession() {

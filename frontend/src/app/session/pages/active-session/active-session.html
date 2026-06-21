@@ -105,6 +105,30 @@
             </select>
           </div>
 
+          <div class="form-group full-width">
+            <label>AI Mission Generator</label>
+
+            <button
+              type="button"
+              class="secondary"
+              (click)="generateMissionWithAi()"
+              [disabled]="isGeneratingMission()"
+            >
+              {{ isGeneratingMission() ? 'Generating...' : 'Generate with AI' }}
+            </button>
+
+            <small>
+              Uses AI to suggest a custom mission based on the selected factions and notes.
+              Always check the result before using it.
+            </small>
+
+            @if (missionBriefing) {
+              <p class="mission-briefing">
+                {{ missionBriefing }}
+              </p>
+            }
+          </div>
+
           <div class="form-group">
             <label for="missionName">Mission</label>
             <input
