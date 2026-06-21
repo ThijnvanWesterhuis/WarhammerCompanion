@@ -1,0 +1,133 @@
+<div class="page dashboard-page">
+  <section class="dashboard-hero">
+    <div>
+      <h1>Welcome, Commander</h1>
+      <span class="mono-label">System status: nominal. Ready for deployment.</span>
+    </div>
+
+    <div class="hero-actions">
+      @if (accountService.isLoggedIn()) {
+        <a routerLink="/session" class="button secondary">Continue Active Session</a>
+        <a routerLink="/session" class="button">Start New Session</a>
+      } @else {
+        <a routerLink="/login" class="button secondary">Authenticate</a>
+        <a routerLink="/register" class="button">Register Account</a>
+      }
+    </div>
+  </section>
+
+  <section class="dashboard-grid">
+    <article class="tactical-card quick-card">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">Dice Cogitator</span>
+          <h3>Quick Roller</h3>
+        </div>
+        <span class="status-tag">D6</span>
+      </div>
+
+      <div class="quick-roll-preview">
+        <span># 6</span>
+        <span>D6</span>
+      </div>
+
+      @if (accountService.isLoggedIn()) {
+        <a routerLink="/dice" class="button secondary wide-button">Open Roller</a>
+      } @else {
+        <a routerLink="/login" class="button secondary wide-button">Login To Roll</a>
+      }
+    </article>
+
+    <article class="tactical-card engagements-card">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">Recent Activity</span>
+          <h3>Recent Engagements</h3>
+        </div>
+        <span class="status-tag">Latest 2</span>
+      </div>
+
+      @if (!accountService.isLoggedIn()) {
+        <div class="engagement-empty-state">
+          <strong>No access to battle records</strong>
+          <span>Login to see your two most recent saved matches.</span>
+        </div>
+      } @else if (loadingRecentMatches()) {
+        <div class="engagement-empty-state">
+          <strong>Loading records...</strong>
+          <span>Retrieving recent match history.</span>
+        </div>
+      } @else if (recentMatchesError()) {
+        <p class="error-box">{{ recentMatchesError() }}</p>
+      } @else {
+        @for (match of recentMatches(); track match.id) {
+          <a routerLink="/matches" class="engagement-row">
+            <span
+              class="status-tag"
+              [class.warning]="getResultClass(match) === 'warning'"
+              [class.danger]="getResultClass(match) === 'danger'"
+            >
+              {{ formatResult(match) }}
+            </span>
+
+            <div>
+              <strong>{{ getMatchTitle(match) }}</strong>
+              <span>
+                {{ getMatchSubtitle(match) }} // {{ (match.endedAt || match.startedAt) | date:'mediumDate' }}
+              </span>
+            </div>
+
+            <strong>{{ getFinalScore(match) }}</strong>
+          </a>
+        } @empty {
+          <div class="engagement-empty-state">
+            <strong>No saved matches yet</strong>
+            <span>Finish and save a session to show it here.</span>
+          </div>
+        }
+
+        <a routerLink="/matches" class="button secondary wide-button history-link">Open Match History</a>
+      }
+    </article>
+
+    <article class="tactical-card roster-card-panel">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">Army Logistics</span>
+          <h3>Active Rosters</h3>
+        </div>
+        <span class="status-tag">Future</span>
+      </div>
+
+      <div class="roster-grid">
+        <div class="roster-card">
+          <span>2000 PTS</span>
+          <strong>Heavy Armor Div.</strong>
+          <small>Army list CRUD planned</small>
+        </div>
+
+        <div class="roster-card">
+          <span>1000 PTS</span>
+          <strong>Infiltration Cadre</strong>
+          <small>Edition support planned</small>
+        </div>
+      </div>
+    </article>
+
+    <article class="tactical-card performance-card">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">Sector Data</span>
+          <h3>Sector Performance</h3>
+        </div>
+        <span class="status-tag">Stats</span>
+      </div>
+
+      <div class="performance-placeholder"></div>
+      <div class="performance-footer">
+        <span>Win Rate: 66%</span>
+        <span>Last 6 Matches</span>
+      </div>
+    </article>
+  </section>
+</div>

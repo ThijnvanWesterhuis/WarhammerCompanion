@@ -1,0 +1,120 @@
+<div class="auth-access-page">
+  <section class="auth-intro">
+    <h1>War Slate</h1>
+    <span class="mono-label">New commander provisioning</span>
+    <p>Create a tactical account so sessions, dice presets and future match data can be linked to your command profile.</p>
+  </section>
+
+  <section class="card auth-card active">
+    <div class="panel-heading">
+      <div>
+        <span class="eyebrow">New Commander</span>
+        <h2>Register</h2>
+      </div>
+      <span class="status-tag">Recruit</span>
+    </div>
+
+    <div class="auth-tabs">
+      <a class="auth-tab" routerLink="/login">Authenticate</a>
+      <span class="auth-tab active">Register</span>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="error-box">{{ errorMessage() }}</p>
+    }
+
+    <form (ngSubmit)="onSubmit()" novalidate>
+      <div class="form-group command-input">
+        <label for="username">Operator ID</label>
+        <div class="input-shell" [class.input-error]="!!usernameWarning || !!getFieldServerError('username')">
+          <span class="material-symbols-outlined">badge</span>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="CHOOSE_USERNAME"
+            [(ngModel)]="username"
+          />
+        </div>
+        @if (usernameWarning) {
+          <span class="field-error">{{ usernameWarning }}</span>
+        }
+        @if (getFieldServerError('username')) {
+          <span class="field-error">{{ getFieldServerError('username') }}</span>
+        }
+      </div>
+
+      <div class="form-group command-input">
+        <label for="email">Email Routing</label>
+        <div class="input-shell" [class.input-error]="!!emailWarning || !!getFieldServerError('email')">
+          <span class="material-symbols-outlined">alternate_email</span>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="ENTER_EMAIL_ROUTING"
+            [(ngModel)]="email"
+          />
+        </div>
+        @if (emailWarning) {
+          <span class="field-error">{{ emailWarning }}</span>
+        }
+        @if (getFieldServerError('email')) {
+          <span class="field-error">{{ getFieldServerError('email') }}</span>
+        }
+      </div>
+
+      <div class="form-group command-input">
+        <label for="password">Security Cipher</label>
+        <div class="input-shell" [class.input-error]="passwordWarnings.length > 0 || !!getFieldServerError('password')">
+          <span class="material-symbols-outlined">lock</span>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="CREATE_CIPHER_KEY"
+            [(ngModel)]="password"
+          />
+        </div>
+        <span class="field-hint">Use at least 8 characters, 1 number, and 1 special character.</span>
+
+        @if (passwordWarnings.length > 0) {
+          <ul class="warning-list">
+            @for (warning of passwordWarnings; track warning) {
+              <li>{{ warning }}</li>
+            }
+          </ul>
+        }
+
+        @if (getFieldServerError('password')) {
+          <span class="field-error">{{ getFieldServerError('password') }}</span>
+        }
+      </div>
+
+      <div class="form-group command-input">
+        <label for="confirmPassword">Confirm Cipher</label>
+        <div class="input-shell" [class.input-error]="!!confirmPasswordWarning || !!getFieldServerError('confirmPassword')">
+          <span class="material-symbols-outlined">verified_user</span>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            placeholder="REPEAT_CIPHER_KEY"
+            [(ngModel)]="confirmPassword"
+          />
+        </div>
+        @if (confirmPasswordWarning) {
+          <span class="field-error">{{ confirmPasswordWarning }}</span>
+        }
+        @if (getFieldServerError('confirmPassword')) {
+          <span class="field-error">{{ getFieldServerError('confirmPassword') }}</span>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="wide-auth-button">Create Account</button>
+        <a routerLink="/login" class="button secondary">Already Registered</a>
+      </div>
+    </form>
+  </section>
+</div>

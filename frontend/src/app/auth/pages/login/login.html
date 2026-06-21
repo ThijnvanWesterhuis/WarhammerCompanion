@@ -1,0 +1,71 @@
+<div class="auth-access-page">
+  <section class="auth-intro">
+    <h1>War Slate</h1>
+    <span class="mono-label">Sector-01 secure access</span>
+    <p>Authenticate your commander profile to open protected tactical systems, dice protocols and live battle sessions.</p>
+  </section>
+
+  <section class="card auth-card active">
+    <div class="panel-heading">
+      <div>
+        <span class="eyebrow">Secure Access</span>
+        <h2>Authenticate</h2>
+      </div>
+      <span class="status-tag">Login</span>
+    </div>
+
+    <div class="auth-tabs">
+      <span class="auth-tab active">Authenticate</span>
+      <a class="auth-tab" routerLink="/register">Register</a>
+    </div>
+
+    @if (errorMessage()) {
+      <p class="error-box">{{ errorMessage() }}</p>
+    }
+
+    <form (ngSubmit)="onSubmit()" #loginForm="ngForm" novalidate>
+      <div class="form-group command-input">
+        <label for="username">Operator ID</label>
+        <div class="input-shell">
+          <span class="material-symbols-outlined">badge</span>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="ENTER_USERNAME"
+            required
+            [(ngModel)]="username"
+          />
+        </div>
+      </div>
+
+      <div class="form-group command-input">
+        <label for="password">Security Cipher</label>
+        <div class="input-shell">
+          <span class="material-symbols-outlined">lock</span>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="ENTER_CIPHER_KEY"
+            required
+            [(ngModel)]="password"
+          />
+        </div>
+      </div>
+
+      <div class="auth-options">
+        <span class="checkbox-square"></span>
+        <span>Retain connection</span>
+        <a routerLink="/register">Cipher recovery</a>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="wide-auth-button">
+          <span class="material-symbols-outlined">login</span>
+          Engage Link
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

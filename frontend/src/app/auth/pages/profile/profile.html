@@ -1,0 +1,107 @@
+<div class="page profile-page">
+  <section class="profile-grid">
+    <article class="tactical-card active commander-panel">
+      <div class="commander-header">
+        <div class="avatar-frame">
+          <span class="material-symbols-outlined">person</span>
+        </div>
+
+        <div>
+          <span class="eyebrow">Active Commander</span>
+          @if (user(); as user) {
+            <h2>{{ user.username }}</h2>
+            <span class="status-tag">Status: Operational</span>
+          } @else {
+            <h2>Loading Profile</h2>
+            <span class="status-tag">Syncing</span>
+          }
+        </div>
+      </div>
+
+      @if (errorMessage()) {
+        <p class="error-box">{{ errorMessage() }}</p>
+      }
+
+      @if (user(); as user) {
+        <div class="stat-grid account-stats">
+          <div class="stat-card">
+            <span class="eyebrow">Total Engagements</span>
+            <strong>--</strong>
+            <div class="progress-line"></div>
+          </div>
+
+          <div class="stat-card">
+            <span class="eyebrow">Active Role</span>
+            <strong>{{ user.role }}</strong>
+            <div class="progress-line short"></div>
+          </div>
+        </div>
+
+        <div class="data-list profile-data">
+          <div class="data-row">
+            <span>Username</span>
+            <span>{{ user.username }}</span>
+          </div>
+
+          <div class="data-row">
+            <span>Email Routing</span>
+            <span>{{ user.email }}</span>
+          </div>
+
+          <div class="data-row">
+            <span>Authorization</span>
+            <span>{{ user.role }}</span>
+          </div>
+        </div>
+
+        <div class="recent-link-data">
+          <span class="eyebrow">Recent Link Data</span>
+          <div class="activity-row">
+            <span>JWT Token Guard</span>
+            <strong>Active</strong>
+          </div>
+          <div class="activity-row">
+            <span>Protected Routes</span>
+            <strong>Enabled</strong>
+          </div>
+        </div>
+
+        <div class="form-actions profile-actions">
+          @if (user.role === 'ADMIN') {
+            <a routerLink="/admin" class="button tertiary">Open Admin Page</a>
+          }
+
+          <button type="button" class="secondary" (click)="logout()">
+            <span class="material-symbols-outlined">logout</span>
+            Terminate Link
+          </button>
+        </div>
+      }
+    </article>
+
+    <aside class="tactical-card account-feed">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">Account Feed</span>
+          <h3>Connection Details</h3>
+        </div>
+        <span class="status-tag">JWT</span>
+      </div>
+
+      <p>
+        Your browser stores the JWT locally after login. Every protected request sends the token to the backend, where Spring Security checks whether the request is allowed.
+      </p>
+
+      <div class="data-list">
+        <div class="data-row">
+          <span>Frontend</span>
+          <span>Interceptor</span>
+        </div>
+        <div class="data-row">
+          <span>Backend</span>
+          <span>Token Filter</span>
+        </div>
+      </div>
+    </aside>
+  </section>
+</div>

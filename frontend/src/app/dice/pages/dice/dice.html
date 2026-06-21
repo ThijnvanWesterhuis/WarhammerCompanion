@@ -1,0 +1,272 @@
+<div class="page dice-console">
+  <section class="page-hero compact">
+    <div>
+      <h1>Combat Resolution</h1>
+      <span class="mono-label">Tactical dice interface // D6, D10 and D20 protocols</span>
+    </div>
+
+    <div class="hero-actions">
+      @if (selectedPreset; as preset) {
+        <span class="status-tag warning">Preset: {{ preset.name }}</span>
+      } @else {
+        <span class="status-tag">No Preset Loaded</span>
+      }
+    </div>
+  </section>
+
+  @if (errorMessage()) {
+    <p class="error-box">{{ errorMessage() }}</p>
+  }
+
+  @if (successMessage()) {
+    <p class="success-box">{{ successMessage() }}</p>
+  }
+
+  <section class="dice-layout">
+    <aside class="tactical-card active parameters-panel">
+      <div class="panel-heading">
+        <div>
+          <span class="eyebrow">Parameters</span>
+          <h3>Roll Setup</h3>
+        </div>
+        <span class="status-tag">{{ diceType }}</span>
+      </div>
+
+      <form class="dice-form" (ngSubmit)="rollDice()" novalidate>
+        <div class="form-group">
+          <label for="diceType">Dice Protocol</label>
+          <select id="diceType" name="diceType" [(ngModel)]="diceType">
+            @for (type of diceTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="diceCount">Dice Quantity</label>
+          <div class="quantity-control">
+            <button type="button" class="secondary" [disabled]="diceCount <= 1" (click)="diceCount = diceCount - 1">-</button>
+            <input
+              id="diceCount"
+              name="diceCount"
+              type="number"
+              min="1"
+              max="100"
+              [class.input-error]="!!diceCountWarning"
+              [(ngModel)]="diceCount"
+            />
+            <button type="button" class="secondary" [disabled]="diceCount >= 100" (click)="diceCount = diceCount + 1">+</button>
+          </div>
+
+          @if (diceCountWarning) {
+            <span class="field-error">{{ diceCountWarning }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Success Threshold</label>
+          <div class="threshold-grid">
+            <button type="button" class="threshold-button" [class.selected]="successThreshold === null" (click)="successThreshold = null">None</button>
+            @for (threshold of thresholdOptions; track threshold) {
+              <button type="button" class="threshold-button" [class.selected]="successThreshold === threshold" (click)="successThreshold = threshold">
+                {{ threshold }}+
+              </button>
+            }
+          </div>
+
+          @if (successThresholdWarning) {
+            <span class="field-error">{{ successThresholdWarning }}</span>
+          }
+        </div>
+
+        @if (selectedPreset; as preset) {
+          @if (selectedPresetStillMatchesSettings) {
+            <p class="preset-feed">
+              Loaded preset: <strong>{{ preset.name }}</strong>
+              @if (preset.phase) {
+                <span> / {{ preset.phase }}</span>
+              }
+              @if (preset.successThreshold) {
+                <span> / {{ preset.successThreshold }}+</span>
+              }
+            </p>
+          } @else {
+            <p class="preset-feed warning">
+              Modified from preset: <strong>{{ preset.name }}</strong>
+            </p>
+          }
+        }
+
+        <button type="submit" class="execute-button">Execute Roll <small>Init Sequence</small></button>
+      </form>
+
+      <div class="preset-editor">
+        <div class="panel-heading compact">
+          <div>
+            <span class="eyebrow">Saved Loadouts</span>
+            <h3>Preset Editor</h3>
+          </div>
+          <span class="status-tag">{{ presets().length }}</span>
+        </div>
+
+        <div class="form-group">
+          <label for="presetName">Preset Name</label>
+          <input
+            id="presetName"
+            name="presetName"
+            type="text"
+            placeholder="Example: Bolter volley"
+            [class.input-error]="!!presetName && !!presetNameWarning"
+            [(ngModel)]="presetName"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="presetPhase">Phase Optional</label>
+          <input
+            id="presetPhase"
+            name="presetPhase"
+            type="text"
+            placeholder="Shooting / Fight / Morale"
+            [(ngModel)]="presetPhase"
+          />
+        </div>
+
+        <div class="form-actions preset-actions">
+          <button type="button" (click)="savePreset()">Save</button>
+          <button type="button" class="secondary" (click)="updateSelectedPreset()">Update</button>
+          <button type="button" class="secondary" (click)="clearPresetSelection()">Clear</button>
+        </div>
+      </div>
+    </aside>
+
+    <section class="results-stack">
+      <section class="tactical-card results-panel">
+        @if (lastRoll(); as roll) {
+          <div class="result-header">
+            @if (roll.successThreshold) {
+              <div class="score-chip success-chip">
+                <span>Success</span>
+                <strong>{{ roll.successCount }}</strong>
+              </div>
+              <div class="score-chip fail-chip">
+                <span>Fails</span>
+                <strong>{{ roll.failCount }}</strong>
+              </div>
+            } @else {
+              <div class="score-chip success-chip">
+                <span>Total</span>
+                <strong>{{ roll.total }}</strong>
+              </div>
+            }
+
+            <span class="status-tag">Volley: {{ roll.diceCount }} | Target: {{ roll.successThreshold ? roll.successThreshold + '+' : 'None' }}</span>
+          </div>
+
+          <div class="dice-results">
+            @for (result of roll.results; track $index) {
+              <span
+                class="die-result"
+                [class.success]="isSuccess(result, roll)"
+                [class.fail]="isFail(result, roll)"
+              >{{ result }}</span>
+            }
+          </div>
+
+          @if (roll.rerollType) {
+            <p class="preset-feed reroll-feed">
+              Reroll type: <strong>{{ roll.rerollType }}</strong>
+            </p>
+          }
+        } @else {
+          <div class="empty-result">
+            <span class="material-symbols-outlined">casino</span>
+            <h3>Awaiting Roll</h3>
+            <p>Set the parameters and execute the roll sequence.</p>
+          </div>
+        }
+
+        <div class="reroll-bar">
+          <span class="mono-label">Re-roll Protocols</span>
+          <div class="form-actions">
+            <button type="button" class="secondary small" (click)="rerollLastRoll()">Reroll Last</button>
+            <button type="button" class="secondary small" [disabled]="!canRerollOnes" (click)="rerollAllOnes()">1s Only</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="tactical-card preset-list-panel">
+        <div class="panel-heading compact">
+          <div>
+            <span class="eyebrow">Loadout Vault</span>
+            <h3>Presets</h3>
+          </div>
+        </div>
+
+        <div class="preset-list">
+          @for (preset of presets(); track preset.id) {
+            <article class="preset-card" [class.selected]="preset.id === selectedPresetId">
+              <div>
+                <strong>{{ preset.name }}</strong>
+                <span>{{ preset.diceCount }} {{ preset.diceType }}</span>
+
+                @if (preset.successThreshold) {
+                  <small>Success {{ preset.successThreshold }}+</small>
+                }
+
+                @if (preset.phase) {
+                  <small>{{ preset.phase }}</small>
+                }
+              </div>
+
+              <div class="preset-card-actions">
+                <button type="button" class="secondary small" (click)="usePreset(preset)">Use</button>
+                <button type="button" class="secondary small" (click)="deletePreset(preset)">Delete</button>
+              </div>
+            </article>
+          } @empty {
+            <p>No presets saved yet.</p>
+          }
+        </div>
+      </section>
+
+      <section class="tactical-card activity-panel">
+        <div class="panel-heading compact">
+          <div>
+            <span class="eyebrow">Recent Activity</span>
+            <h3>Roll History</h3>
+          </div>
+          <span class="status-tag">Last 20</span>
+        </div>
+
+        <div class="history-list">
+          @for (roll of rollHistory(); track roll.id) {
+            <article class="history-row">
+              <div>
+                <strong>{{ roll.diceCount }}x {{ roll.diceType }}</strong>
+
+                @if (roll.sourcePresetName) {
+                  <span>Preset: {{ roll.sourcePresetName }}</span>
+                }
+
+                @if (roll.rerollType) {
+                  <span>Reroll: {{ roll.rerollType }}</span>
+                }
+              </div>
+
+              <span class="history-results">{{ roll.results.join(', ') }}</span>
+
+              @if (roll.successThreshold) {
+                <span class="status-tag">{{ roll.successCount }} Succ</span>
+              } @else {
+                <span class="status-tag">Total {{ roll.total }}</span>
+              }
+            </article>
+          } @empty {
+            <p>No rolls yet.</p>
+          }
+        </div>
+      </section>
+    </section>
+  </section>
+</div>

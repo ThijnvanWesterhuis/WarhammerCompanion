@@ -1,0 +1,115 @@
+<div class="page match-detail-page">
+  <section class="page-hero compact">
+    <div>
+      <h1>Match Details</h1>
+      <span class="mono-label">Archived engagement // full battle record</span>
+    </div>
+
+    <div class="detail-actions">
+      <a routerLink="/matches" class="button secondary">Back to History</a>
+
+      @if (match(); as currentMatch) {
+        <a [routerLink]="['/matches', currentMatch.id, 'edit']" class="button secondary">Edit</a>
+        <button type="button" class="danger-button" [disabled]="deleting()" (click)="deleteMatch()">
+          {{ deleting() ? 'Deleting...' : 'Delete' }}
+        </button>
+      }
+    </div>
+  </section>
+
+  @if (errorMessage()) {
+    <p class="error-box">{{ errorMessage() }}</p>
+  }
+
+  @if (loading()) {
+    <section class="tactical-card">
+      <p>Loading match details...</p>
+    </section>
+  } @else {
+    @if (match(); as currentMatch) {
+      <section class="tactical-card active detail-summary-card">
+        <div class="panel-heading">
+          <div>
+            <span class="eyebrow">Result</span>
+            <h2>{{ currentMatch.playerOneName || 'Player One' }} vs {{ currentMatch.playerTwoName || 'Player Two' }}</h2>
+          </div>
+
+          <span
+            class="status-tag"
+            [class.warning]="getResultClass(currentMatch) === 'warning'"
+            [class.danger]="getResultClass(currentMatch) === 'danger'"
+          >
+            {{ getResultLabel(currentMatch) }}
+          </span>
+        </div>
+
+        <div class="summary-grid">
+          <div>
+            <span class="cell-label">Date</span>
+            <strong>{{ (currentMatch.endedAt || currentMatch.startedAt) | date:'medium' }}</strong>
+          </div>
+
+          <div>
+            <span class="cell-label">Mission</span>
+            <strong>{{ currentMatch.missionName || 'No mission filled in' }}</strong>
+          </div>
+
+          <div>
+            <span class="cell-label">Deployment Map</span>
+            <strong>{{ currentMatch.deploymentMap || 'No deployment map filled in' }}</strong>
+          </div>
+
+          <div>
+            <span class="cell-label">Your Faction</span>
+            <strong>{{ currentMatch.playerOneFaction || 'Unknown faction' }}</strong>
+          </div>
+
+          <div>
+            <span class="cell-label">Opponent</span>
+            <strong>{{ getOpponent(currentMatch) }}</strong>
+          </div>
+
+          <div>
+            <span class="cell-label">Final Score</span>
+            <strong>{{ currentMatch.playerOneScore }} - {{ currentMatch.playerTwoScore }}</strong>
+          </div>
+
+          <div>
+            <span class="cell-label">Timer</span>
+            <strong>{{ formatDuration(currentMatch.elapsedSeconds) }}</strong>
+          </div>
+
+          <div>
+            <span class="cell-label">Status</span>
+            <strong>{{ currentMatch.status }}</strong>
+          </div>
+
+          <div class="full-width">
+            <span class="cell-label">Notes</span>
+            <p>{{ currentMatch.notes || 'No notes filled in.' }}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="tactical-card">
+        <div class="panel-heading compact">
+          <div>
+            <span class="eyebrow">Score Per Round</span>
+            <h2>Round Breakdown</h2>
+          </div>
+        </div>
+
+        <div class="round-score-list">
+          @for (round of currentMatch.roundScores; track round.id) {
+            <article class="round-score-row">
+              <span>Round {{ round.roundNumber }}</span>
+              <strong>{{ round.playerOneScore }} - {{ round.playerTwoScore }}</strong>
+            </article>
+          } @empty {
+            <p>No round scores were saved for this match.</p>
+          }
+        </div>
+      </section>
+    }
+  }
+</div>

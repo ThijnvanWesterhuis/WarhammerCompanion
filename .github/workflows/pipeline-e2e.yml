@@ -1,0 +1,95 @@
+name: WH E2E Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - frontend/**
+      - backend/**
+      - docker/**
+      - docker-compose.yml
+      - .github/workflows/pipeline-e2e.yml
+
+  pull_request:
+    paths:
+      - frontend/**
+      - backend/**
+      - docker/**
+      - docker-compose.yml
+      - .github/workflows/pipeline-e2e.yml
+
+jobs:
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Install Playwright browser
+        run: |
+          cd frontend
+          npx playwright install --with-deps chromium
+
+      - name: Start application with Docker Compose
+        run: docker compose up --build -d
+
+      - name: Show Docker containers
+        run: docker compose ps
+
+      - name: Wait for backend health endpoint
+        run: |
+          for i in {1..60}; do
+            if curl -s http://localhost:8080/health | grep "UP"; then
+              echo "Backend is ready"
+              exit 0
+            fi
+      
+            echo "Waiting for backend..."
+            sleep 2
+          done
+      
+          echo "Backend did not become ready"
+          docker compose logs api
+          docker compose logs postgres
+          exit 1
+
+      - name: Wait for frontend
+        run: |
+          for i in {1..60}; do
+            if curl -s http://localhost:4200 > /dev/null; then
+              echo "Frontend is ready"
+              exit 0
+            fi
+      
+            echo "Waiting for frontend..."
+            sleep 2
+          done
+      
+          echo "Frontend did not become ready"
+          docker compose logs web
+          exit 1
+
+      - name: Run E2E tests
+        env:
+          E2E_BASE_URL: http://localhost:4200
+          API_URL: http://localhost:8080
+        run: |
+          cd frontend
+          npm run e2e
+
+      - name: Stop Docker Compose
+        if: always()
+        run: docker compose down -v

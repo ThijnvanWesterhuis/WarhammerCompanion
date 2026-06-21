@@ -1,0 +1,26 @@
+<div class="page">
+  <section class="page-hero compact">
+    <div>
+      <h1>Admin Command</h1>
+      <span class="mono-label">Restricted system diagnostic panel</span>
+    </div>
+  </section>
+
+  <div class="tactical-card admin-card active">
+    <div class="panel-heading">
+      <div>
+        <span class="eyebrow">Security Clearance</span>
+        <h2>Admin Endpoint</h2>
+      </div>
+      <span class="status-tag danger">Restricted</span>
+    </div>
+
+    <p>Use this panel to test whether the current account can access admin-only backend routes.</p>
+
+    <button (click)="testAdminEndpoint()">Test Admin Endpoint</button>
+
+    @if (message) {
+      <p class="success-box">{{ message }}</p>
+    }
+  </div>
+</div>

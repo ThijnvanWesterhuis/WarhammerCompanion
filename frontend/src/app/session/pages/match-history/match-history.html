@@ -1,0 +1,134 @@
+<div class="page match-history-page">
+  <section class="page-hero compact">
+    <div>
+      <h1>Match History</h1>
+      <span class="mono-label">Archived engagements // {{ totalElements() }} saved matches</span>
+    </div>
+
+    <a routerLink="/session" class="button secondary">New Session</a>
+  </section>
+
+  @if (errorMessage()) {
+    <p class="error-box">{{ errorMessage() }}</p>
+  }
+
+  <section class="tactical-card history-filter-panel">
+    <form class="filter-form" (ngSubmit)="applyFilters()" novalidate>
+      <div class="form-group">
+        <label for="search">Search</label>
+        <input
+          id="search"
+          name="search"
+          placeholder="Player, faction, mission or notes..."
+          [(ngModel)]="search"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="faction">Faction Filter</label>
+        <input
+          id="faction"
+          name="faction"
+          placeholder="Space Marines"
+          [(ngModel)]="faction"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="result">Result</label>
+        <select id="result" name="result" [(ngModel)]="result">
+          @for (option of resultOptions; track option) {
+            <option [value]="option">{{ option || 'All Results' }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button type="submit">Apply</button>
+        <button type="button" class="secondary" (click)="clearFilters()">Clear</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="tactical-card match-list-panel">
+    <div class="panel-heading compact">
+      <div>
+        <span class="eyebrow">Battle Records</span>
+        <h2>Saved Matches</h2>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <p>Loading match history...</p>
+    } @else {
+      <div class="match-list">
+        @for (match of matches(); track match.id) {
+          <article class="match-row">
+            <a class="match-main-link" [routerLink]="['/matches', match.id]">
+              <div>
+                <span class="cell-label">Date</span>
+                <strong>{{ (match.endedAt || match.startedAt) | date:'medium' }}</strong>
+              </div>
+
+              <div>
+                <span class="cell-label">Faction</span>
+                <strong>{{ getOwnFaction(match) }}</strong>
+              </div>
+
+              <div>
+                <span class="cell-label">Opponent</span>
+                <strong>{{ getOpponent(match) }}</strong>
+              </div>
+
+              <div>
+                <span class="cell-label">Result</span>
+                <span
+                  class="status-tag"
+                  [class.warning]="getResultClass(match) === 'warning'"
+                  [class.danger]="getResultClass(match) === 'danger'"
+                >
+                  {{ formatResult(match) }}
+                </span>
+              </div>
+
+              <div>
+                <span class="cell-label">Final Score</span>
+                <strong>{{ getFinalScore(match) }}</strong>
+              </div>
+            </a>
+
+            <div class="match-actions">
+              <a [routerLink]="['/matches', match.id]" class="button secondary compact-action">Details</a>
+              <a [routerLink]="['/matches', match.id, 'edit']" class="button secondary compact-action">Edit</a>
+              <button type="button" class="danger-button compact-action" (click)="deleteMatch(match)">Delete</button>
+            </div>
+          </article>
+        } @empty {
+          <p>No saved matches found. Finish a session first.</p>
+        }
+      </div>
+    }
+  </section>
+
+  <div class="pagination-controls">
+    <button
+      type="button"
+      class="secondary"
+      [disabled]="page() <= 0"
+      (click)="previousPage()"
+    >
+      Previous
+    </button>
+
+    <span class="mono-label">Page {{ page() + 1 }} / {{ totalPages() || 1 }}</span>
+
+    <button
+      type="button"
+      class="secondary"
+      [disabled]="page() + 1 >= totalPages()"
+      (click)="nextPage()"
+    >
+      Next
+    </button>
+  </div>
+</div>
